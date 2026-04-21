@@ -1,8 +1,6 @@
 
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # Set page config
 st.set_page_config(page_title="UAC System Capacity Analytics", layout="wide")
