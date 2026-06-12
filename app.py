@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 st.set_page_config(
     page_title="System Capacity & Care Load Analytics",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded"
 )
 
 import pandas as pd
@@ -100,9 +100,14 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+st.logo("Banner_Symbol.png")
 # -------------------------
 # Sidebar controls
 # -------------------------
+st.sidebar.image(
+    "Banner.png",
+    width='stretch'
+)
 st.sidebar.title("Controls")
 st.sidebar.markdown("Filter data, toggle visuals, and enable modeling.")
 
