@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 st.set_page_config(
     page_title="System Capacity & Care Load Analytics",
     layout="wide",
@@ -182,21 +183,34 @@ st.snow()   # ❄️ Snow breeze effect
 
 # Greeting
 st.caption("### 👋 Welcome! To the **From Border to Care: CBP–HHS Custody-to-Care Analytics Dashboard**.")
+    
 # CBP Section
-st.markdown("#### 🏢 About CBP")
-st.caption(
-    "The **U.S. Customs and Border Protection (CBP)** is the frontline agency responsible for apprehending unaccompanied children at the border. "
-    "CBP agents process these children, determine their legal status, and ensure they are safely transferred to appropriate care facilities. "
-    "Learn more: [CBP Official Site](https://www.cbp.gov)"
-)
+col1, col2 = st.columns([1, 5])
+
+with col1:
+    st.image("CBP.png", width='stretch')  # display the CBP logo
+
+with col2:
+    st.markdown("#### 🏢 About CBP")
+    st.caption(
+        "The **U.S. Customs and Border Protection (CBP)** is the frontline agency responsible for apprehending unaccompanied children at the border. "
+        "CBP agents process these children, determine their legal status, and ensure they are safely transferred to appropriate care facilities. "
+        "Learn more: [CBP Official Site](https://www.cbp.gov)"
+    )
 
 # HHS Section
-st.markdown("#### 🏥 About HHS")
-st.caption(
-    "The **U.S. Department of Health and Human Services (HHS)**, through its **Office of Refugee Resettlement (ORR)**, provides shelter, healthcare, education, and case management for unaccompanied children once they are referred from CBP. "
-    "HHS ensures safe placements, reunification with sponsors, and ongoing support services. "
-    "Learn more: [HHS.gov](https://www.hhs.gov)"
-)
+col1, col2 = st.columns([5, 1])
+
+with col2:
+    st.image("HHS.png", width='stretch')  # display the CBP logo
+
+with col1:
+    st.markdown("#### 🏥 About HHS")
+    st.caption(
+        "The **U.S. Department of Health and Human Services (HHS)**, through its **Office of Refugee Resettlement (ORR): A Parent Agency Administration for Children and Families (ACF), U.S. Department of Health and Human Services**, provides shelter, healthcare, education, and case management for unaccompanied children once they are referred from CBP. "
+        "HHS ensures safe placements, reunification with sponsors, and ongoing support services. "
+        "Learn more: [HHS.gov](https://www.hhs.gov)"
+    )
 
 # Dashboard Structure
 st.markdown("#### 🔹 Dashboard Structure")
@@ -252,7 +266,7 @@ with tab_struct:
     ])
 
     # -------------------------
-    # Subtab: Data Ingestion & Validation use_container_width=True
+    # Subtab: Data Ingestion & Validation
     # -------------------------
     with s_ingest:
         st.subheader("📥 Data Ingestion & ✅ Validation")
