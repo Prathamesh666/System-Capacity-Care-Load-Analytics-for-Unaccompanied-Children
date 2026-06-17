@@ -2460,10 +2460,10 @@ st.markdown(
 
 
 # Buttons for links
-col1, col2 = st.columns([1,1])
-with col1:
+col1, col2, col3, col4, col5, col6 = st.columns(6)
+with col3:
     st.link_button("📂 GitHub Repository",
-                   "https://github.com/Prathamesh666/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children")
-with col2:
+                "https://github.com/Prathamesh666/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children")
+with col4:
     st.link_button("📑 Research Paper",
-                   "https://prathamesh666.github.io/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children/Research%20Paper.html")
+                "https://prathamesh666.github.io/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children/Research%20Paper.html")
