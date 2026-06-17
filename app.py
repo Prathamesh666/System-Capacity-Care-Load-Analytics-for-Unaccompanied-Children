@@ -62,6 +62,11 @@ def load_and_prepare(source):
 # --- CSS for metric styling with hover + bouncing animation ---
 st.markdown("""
     <style>
+    /* Center text inside the alert */
+    .stAlert {
+        text-align: center;
+    }
+    
     /* Base metric card */
     div[data-testid="stMetric"] { background-color: rgba(255,255,255,0.05); border-radius: 12px; padding: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: all 0.3s ease; text-align: left; overflow: hidden; position: relative;
     }
@@ -334,7 +339,7 @@ with tab_struct:
                     y=[i] * len(plot_df),
                     z=plot_df[m],
                     mode='lines',
-                    name=labels[i],  # emoji-enhanced labels
+                    name=labels[i],  # emoji-enhanced labels use_container_width=True
                     line=dict(width=4, color=colors[i % len(colors)])
                 ))
     
@@ -345,8 +350,8 @@ with tab_struct:
                     camera=dict(        # set initial camera view
                         eye=dict(x=1.5, y=1.5, z=1.2)
                     )),
-            legend=dict(title="📌 Metrics"), margin=dict(l=0, r=0, t=40, b=80),  # extra bottom margin for legend
-            height=600, template='plotly_white'
+            legend=dict(title="📌 Metrics"), margin=dict(l=0, r=0, t=50, b=80),  # extra bottom margin for legend
+            autosize=True
         )
     
         st.plotly_chart(fig3d, width='stretch')
@@ -409,8 +414,7 @@ with tab_struct:
                     text="📈 <b>Daily Total System Load (CBP + HHS)</b>",
                     x=0.5, xanchor='center', yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
-                ),
-                height=400
+                ), autosize=True
             )
             st.plotly_chart(fig_daily_CPB_Plus_HHS, width='stretch')
         
@@ -437,8 +441,7 @@ with tab_struct:
                     text="📈 <b>Daily Net Daily Intake</b>",
                     x=0.5, xanchor='center', yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
-                ),
-                height=400
+                ), autosize=True
             )
             with col1:
                 st.info("📊 Net Daily Intake = Transfers out of CBP - Discharges from HHS.")
@@ -466,8 +469,7 @@ with tab_struct:
                     text="📈 <b>Daily Care Load Growth Rate (%)</b>",
                     x=0.5, xanchor='center', yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
-                ),
-                height=400
+                ), autosize=True
             )
             with col2:
                 st.info("📊 Care Load Growth Rate = % change in Total System Load from the previous day.")
@@ -506,7 +508,7 @@ with tab_struct:
                 }
             )
             fig_backlog.update_layout(
-                hovermode='x unified',
+                hovermode='x unified', autosize=True,
                 title=dict(x=0.5, xanchor='center', font=dict(size=16))
             )
 
@@ -549,7 +551,7 @@ with tab_struct:
                         x_finite.min():x_finite.max():100j,
                         y_finite.min():y_finite.max():100j
                     ]
-                    grid_z = griddata((x_vals, y_vals), z_vals, (grid_x, grid_y), method='cubic')
+                    grid_z = griddata((x_vals, y_vals), z_vals, (grid_x, grid_y), method='linear')
     
                     fig = go.Figure(data=[
                         go.Surface(
@@ -568,8 +570,7 @@ with tab_struct:
                             xaxis_title='📦 Net Daily Intake',
                             yaxis_title='📈 Care Load Growth Rate (%)',
                             zaxis_title='🧮 Total System Load',
-                        ),
-                        height=600
+                        ), autosize=True
                     )
     
                 else:
@@ -602,8 +603,7 @@ with tab_struct:
                             xaxis_title='📦 Net Daily Intake',
                             yaxis_title='📈 Care Load Growth Rate (%)',
                             zaxis_title='🧮 Total System Load'
-                        ),
-                        height=600
+                        ), autosize=True
                     )
     
                 # Render with Streamlit using your rule
@@ -677,8 +677,7 @@ with tab_struct:
                     xanchor='center',
                     yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
-                ),
-                height=700
+                ), autosize=True
             )
         
             # Render chart in Streamlit
@@ -750,8 +749,8 @@ with tab_struct:
                     xaxis_title='🍽 Net Daily Intake',
                     yaxis_title='🔄 Discharge Offset Ratio',
                     zaxis_title='👶 Total System Load'
-                ), margin=dict(l=0, r=0, t=40, b=80),  # extra bottom margin for legend
-                height=600
+                ),
+                autosize=True
             )
         
             # Render chart in Streamlit
@@ -819,7 +818,7 @@ with tab_struct:
                 labels={ 'value': '👶 Number of Children', 'index': '📅 Date', 'variable': '🏢 System'}, title="📊 CBP vs 🏥 HHS Daily Total System Load Comparison")
         
             # Update layout for presentation clarity
-            fig_comparison.update_layout( title=dict(x=0.5, xanchor='center', font=dict(size=14)), height=450,
+            fig_comparison.update_layout( title=dict(x=0.5, xanchor='center', font=dict(size=14)), autosize=True,
                 legend=dict(
                     title="🏢 System",
                     orientation="h",       # horizontal legend
@@ -860,7 +859,7 @@ with tab_struct:
             fig_trends.add_trace(go.Scatter(x=weekly.index, y=weekly.values, mode='lines', name='Weekly Load'))
             fig_trends.add_trace(go.Scatter(x=monthly.index, y=monthly.values, mode='lines', name='Monthly Load'))
             fig_trends.update_layout( title=dict( text="📊 <b>Weekly and Monthly Total System Load</b>", x=0.5, xanchor='center', yanchor='top',
-                font=dict(size=18, family="Arial", color="black") ), template='plotly_white', height=420 )
+                font=dict(size=18, family="Arial", color="black") ), template='plotly_white', autosize=True)
             st.plotly_chart(fig_trends, width='stretch')
             # Dynamic expander with stats
             with st.expander("ℹ️ More Information about this chart"):
@@ -896,7 +895,7 @@ with tab_struct:
         
             # Update layout with centered bold title
             fig_highload.update_layout(hovermode='x unified', title=dict( text=f'⚠️ <b>Total System Load with High-Load Threshold ({threshold:.0f})</b>',
-                    x=0.5, xanchor='center', yanchor='top', font=dict(size=18, family="Arial", color="black")
+                    x=0.5, xanchor='center', yanchor='top', font=dict(size=18, family="Arial", color="black"), autosize=True
                 )
             )
         
@@ -976,7 +975,7 @@ with tab_struct:
             # Layout
             fig_timeline_comparison.update_layout(
                 title_text="<b>Comparison Across Custom Periods: Total System Load</b>",
-                hovermode='x unified',
+                hovermode='x unified', autosize=True,
                 title=dict(x=0.5, xanchor='center', font=dict(size=17))
             )
     
@@ -1047,7 +1046,7 @@ with tab_struct:
                 ),
                 xaxis_title="📅 Month",
                 yaxis_title="📆 Year",
-                height=600
+                autosize=True
             )
         
             # Render chart in Streamlit
@@ -1079,7 +1078,7 @@ with tab_struct:
         fig_offset.add_hline(y=avg_offset, line_dash="dash", line_color="red", annotation_text=f"Avg: {avg_offset:.2f}")
         fig_offset.update_layout(
             template='plotly_white',
-            height=360,
+            autosize=True,
             title=dict(
                 text="⚖️ <b>Discharge Offset Ratio Over Time</b>",
                 x=0.5, xanchor='center', yanchor='top',
@@ -1102,7 +1101,6 @@ with tab_struct:
             else:  # avg_offset > 1.0
                 st.success(f"🚀 Discharge Healthy: Ratio = {avg_offset:.2f} — discharges exceed transfers ✅ system catching up.")
             
-        
         # 4.3 Lag Analysis & Feature Statistics
         st.markdown("### 🔄 Lag Analysis & Feature Statistics")
         df_lag = df[['Total System Load']].copy()
@@ -1113,7 +1111,7 @@ with tab_struct:
         corr = df_lag.corr()
         fig_corr = px.imshow(corr, color_continuous_scale='RdBu', zmin=-1, zmax=1)
         fig_corr.update_layout(
-            height=520,
+            autosize=True,
             template='plotly_white',
             title=dict(
                 text="📈 <b>Lag Correlation Matrix (Total System Load & lags)</b>",
@@ -1143,14 +1141,14 @@ with tab_struct:
             )
             fig_flow.update_layout(
                 template='plotly_white',
-                height=520,
+                autosize=True,
                 title=dict(
                     text="🔀 <b>Net Intake vs Discharge Offset Ratio</b>",
                     x=0.5, xanchor='center', yanchor='top',
                     font=dict(size=16, family="Arial", color="black")
                 )
             )
-            st.plotly_chart(fig_flow, use_container_width=True, key="flow_efficiency_chart")
+            st.plotly_chart(fig_flow, width='stretch', key="flow_efficiency_chart")
         
             with st.expander("ℹ️ More Information"):
                 avg_intake = df_flow['Net Daily Intake'].mean()
@@ -1215,8 +1213,7 @@ with tab_struct:
                     xanchor='center',
                     yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
-                ),
-                height=700
+                ), autosize=True
             )
         
             # Render chart in Streamlit
@@ -1301,12 +1298,11 @@ with tab_struct:
                     xaxis_title='📆 Day of Week (0=Mon, 6=Sun)',
                     yaxis_title='🗓 Month (1=Jan, 12=Dec)',
                     zaxis_title='⚙️ Total System Load'
-                ),
-                height=700
+                ), autosize=True
             )
         
             # Render chart in Streamlit
-            st.plotly_chart(fig_temporal_surface_3d, width='stretch', key="temporal_surface_3d_chart")
+            st.plotly_chart(fig_temporal_surface_3d, width='stretch')
         
             # Dynamic expander with stats
             with st.expander("ℹ️ More Information about this graph"):
@@ -1397,11 +1393,11 @@ with tab_struct:
                 xaxis_title="📅 Date",
                 yaxis_title="👶 Total Children Under Care",
                 template="plotly_white",
-                height=500
+                autosize=True
             )
         
             # Render chart in Streamlit
-            st.plotly_chart(fig1, width='stretch', key="rolling_avg_chart")
+            st.plotly_chart(fig1, width='stretch')
         
             # Dynamic expander with stats       
             with st.expander("ℹ️ More Information about this chart"):
@@ -1498,7 +1494,7 @@ with tab_struct:
                     xaxis_title="📅 Date",
                     yaxis_title="👶 Total Children Under Care",
                     template="plotly_white",
-                    height=500
+                    autosize=True
                 )
         
                 # Render chart
@@ -1524,7 +1520,7 @@ with tab_struct:
             df['7-Day Rolling Std Dev Load'] = df['Total System Load'].rolling(window=7).std()
         
             # --- First 3D Scatter Plot: Load, Variability, Net Intake ---
-            fig1 = go.Figure(data=[
+            fig_1 = go.Figure(data=[
                 go.Scatter3d(
                     x=df['Total System Load'],
                     y=df['7-Day Rolling Std Dev Load'],
@@ -1540,7 +1536,7 @@ with tab_struct:
                 )
             ])
         
-            fig1.update_layout(
+            fig_1.update_layout(
                 scene=dict(
                     xaxis_title='⚙️ Total System Load',
                     yaxis_title='📊 7-Day Rolling Std Dev Load',
@@ -1552,11 +1548,10 @@ with tab_struct:
                     xanchor='center',
                     yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
-                ),
-                height=700
+                ), autosize=True
             )
         
-            st.plotly_chart(fig1, width='stretch', key="scatter_load_variability")
+            st.plotly_chart(fig_1, width='stretch', key="scatter_load_variability")
         
             with st.expander("ℹ️ More Information about this graph"):
                 avg_std = df['7-Day Rolling Std Dev Load'].mean()
@@ -1568,7 +1563,7 @@ with tab_struct:
                 st.warning("⚠️ High variability may indicate unstable intake patterns requiring closer monitoring.")
         
             # --- Second 3D Scatter Plot: Load, Variability, Strain Windows ---
-            fig2 = go.Figure(data=[
+            fig_2 = go.Figure(data=[
                 go.Scatter3d(
                     x=df['Total System Load'],
                     y=df['7-Day Rolling Std Dev Load'],
@@ -1584,7 +1579,7 @@ with tab_struct:
                 )
             ])
         
-            fig2.update_layout(
+            fig_2.update_layout(
                 scene=dict(
                     xaxis_title='⚙️ Total System Load',
                     yaxis_title='📊 7-Day Rolling Std Dev Load',
@@ -1596,11 +1591,10 @@ with tab_struct:
                     xanchor='center',
                     yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
-                ),
-                height=700
+                ), autosize=True
             )
         
-            st.plotly_chart(fig2, width='stretch', key="scatter_strain_windows")
+            st.plotly_chart(fig_2, width='stretch')
         
             with st.expander("ℹ️ More Information about this graph"):
                 high_load_days = int(df['High Load'].sum())
@@ -1665,8 +1659,7 @@ with tab_struct:
                     xaxis_title='⚙️ Total System Load',
                     yaxis_title='📊 7-Day Rolling Std Dev Load',
                     zaxis_title='🔥 Composite Stress Score'
-                ),
-                height=700
+                ), autosize=True
             )
         
             # Render chart in Streamlit
@@ -1755,8 +1748,7 @@ with tab_struct:
                     xaxis_title='🍽 Net Daily Intake',
                     yaxis_title='📈 Care Load Growth Rate (%)',
                     zaxis_title='💡 Composite Pressure Score'
-                ),
-                height=700
+                ), autosize=True
             )
         
             # Render chart in Streamlit
@@ -1779,6 +1771,7 @@ with tab_struct:
 # -------------------------
 with tab_reco:
     st.header("🎯 Recommendational Forecast — Feature Engineering, Modeling & Recommendations")
+    st.snow()
 
     st.markdown(
         """
@@ -1824,7 +1817,7 @@ with tab_reco:
     
             # Layout tweaks
             fig.update_layout(
-                template='plotly_white',
+                template='plotly_white', autosize=True,
                 xaxis=dict(tickmode='linear'),
                 title=dict(x=0.5, xanchor='center')
             )
@@ -1912,7 +1905,7 @@ with tab_reco:
                     xaxis_title='7d Rolling Mean',
                     yaxis_title='7d Rolling Std Dev',
                     zaxis_title='Current Load'
-                ),
+                ), autosize=True
             )
     
             st.plotly_chart(fig_interaction, width='stretch', key="interaction_3d_chart")
@@ -1956,7 +1949,7 @@ with tab_reco:
             )
             fig_day.update_layout(
                 template='plotly_white',
-                hovermode='x unified',
+                hovermode='x unified', autosize=True,
                 title=dict(x=0.5, xanchor='center')
             )
             st.plotly_chart(fig_day, width='stretch', key="day_distribution")
@@ -1985,7 +1978,7 @@ with tab_reco:
             )
             fig_month.update_layout(
                 template='plotly_white',
-                hovermode='x unified',
+                hovermode='x unified', autosize=True,
                 title=dict(x=0.5, xanchor='center')
             )
             st.plotly_chart(fig_month, width='stretch', key="month_distribution")
@@ -2192,7 +2185,7 @@ with tab_reco:
                 font=dict(size=17)
             ),
             xaxis_title='Date',
-            yaxis_title='Pressure Score'
+            yaxis_title='Pressure Score', autosize=True
         )
         
         # Render in Streamlit
@@ -2252,8 +2245,7 @@ with tab_reco:
                         xaxis_title='Total System Load',
                         yaxis_title='7-Day Rolling Std Dev Load',
                         zaxis_title='Operational Pressure Index'
-                    ),
-                    height=600,
+                    ), autosize=True,
                     template='plotly_white'
                 )
                 st.plotly_chart(fig_pressure, width='stretch', key="pressure_surface_3d")
@@ -2410,7 +2402,7 @@ with tab_reco:
             template='plotly_white',
             hovermode='x unified',
             legend=dict(x=0.01, y=0.99, bordercolor="Black", borderwidth=1),
-            height=700
+            autosize=True
         )
         
         st.plotly_chart(fig, width='stretch')
@@ -2435,9 +2427,43 @@ with tab_reco:
             st.toast("⚠️ Forecasted system load exceeds the alert threshold!", icon="🔥")
         else:
             st.toast("✅ Forecasted system load remains within safe limits.", icon="📈")
-    
+
 # -------------------------
 # Footer
 # -------------------------
 st.markdown("---")
-st.caption("Dashboard generated from the provided notebook. For production, add robust data validation, time-series CV, CI for models, and alerting integrations.")
+st.markdown(
+    """
+    <div style='text-align: center; color: white; font-size: 14px; line-height: 1.6;'>
+    
+        🎶 In halls of data, echoes rise,
+        a chorus of numbers beneath the skies.
+        From custody’s gate to care’s embrace,
+        each metric sings of a system’s pace.
+        
+        🎵 The charts are strings, the plots a drum,
+        volatility hums where the children come.
+        Backlogs whisper in minor key,
+        while forecasts chant of what may be.
+        
+        🎼 So let the dashboard strike its chord,
+        balancing burdens with insight stored.
+        In harmony, trends and truths align,
+        a symphony guiding care through time.
+        
+        🔖 Created & Powered by Prathamesh Bhurke
+        
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# Buttons for links
+col1, col2 = st.columns([1,1])
+with col1:
+    st.link_button("📂 GitHub Repository",
+                   "https://github.com/Prathamesh666/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children")
+with col2:
+    st.link_button("📑 Research Paper",
+                   "https://prathamesh666.github.io/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children/Research%20Paper.html")
