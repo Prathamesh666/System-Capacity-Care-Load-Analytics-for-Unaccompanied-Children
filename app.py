@@ -100,12 +100,12 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-st.logo("Banner_Symbol.png")
+st.logo("static/Banner_Symbol.png")
 # -------------------------
 # Sidebar controls
 # -------------------------
 st.sidebar.image(
-    "Banner.png",
+    "static/Banner.png",
     width='stretch'
 )
 st.sidebar.title("Controls")
@@ -193,7 +193,7 @@ st.caption("### 👋 Welcome! To the **From Border to Care: CBP–HHS Custody-to
 col1, col2 = st.columns([1, 5])
 
 with col1:
-    st.image("CBP.png", width='stretch')  # display the CBP logo
+    st.image("static/CBP.png", width='stretch')  # display the CBP logo
 
 with col2:
     st.markdown("#### 🏢 About CBP")
@@ -207,7 +207,7 @@ with col2:
 col1, col2 = st.columns([5, 1])
 
 with col2:
-    st.image("HHS.png", width='stretch')  # display the CBP logo
+    st.image("static/HHS.png", width='stretch')  # display the CBP logo
 
 with col1:
     st.markdown("#### 🏥 About HHS")
