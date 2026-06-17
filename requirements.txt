@@ -2,5 +2,6 @@ streamlit
 pandas
 numpy
 plotly
-statsmodels
+statsmodel
 scikit-learn
+scipy

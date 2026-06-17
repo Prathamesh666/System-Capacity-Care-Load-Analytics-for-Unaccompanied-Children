@@ -18,7 +18,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy.interpolate import griddata
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-import warnings
+import warnings 
 warnings.filterwarnings("ignore")
 
 # -------------------------
