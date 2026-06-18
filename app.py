@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 st.set_page_config(
     page_title="System Capacity & Care Load Analytics",
     layout="wide",
@@ -114,7 +113,6 @@ st.sidebar.image(
     width='stretch'
 )
 st.sidebar.title("Controls")
-st.sidebar.markdown("Filter data, toggle visuals, and enable modeling.")
 
 # --- Sidebar Upload Option ---
 uploaded_file = st.sidebar.file_uploader(
@@ -165,8 +163,6 @@ try:
 
     except Exception as e:
         st.warning(f"⚠️ Date filter could not be applied: {e}")
-
-    st.caption("📊 HHS dataset loaded and filtered successfully.")
 
 except Exception as e:
     st.error(f"⚠️ Error loading dataset: {e}")
@@ -344,13 +340,15 @@ with tab_struct:
                 ))
     
         fig3d.update_layout( 
-            title=dict(text="🌐 <b>3D Consolidated Flow of Metrics</b>", x=0.5, xanchor='center', yanchor='top', font=dict(size=16)),
-            scene=dict( xaxis_title='📅 Date', yaxis_title='📊 Metric Segment', zaxis_title='🔢 Count',
-                    aspectmode="cube",  # ensures equal scaling
-                    camera=dict(        # set initial camera view
-                        eye=dict(x=1.5, y=1.5, z=1.2)
-                    )),
-            legend=dict(title="📌 Metrics"), margin=dict(l=0, r=0, t=50, b=80),  # extra bottom margin for legend
+            title=dict(text="🌐 <b>3D Consolidated Flow of Metrics</b>", x=0.5, xanchor='center', yanchor='top', font=dict(size=14)),
+            scene=dict(
+                xaxis=dict(title=dict(text="📅 Date", font=dict(size=12))),
+                yaxis=dict(title=dict(text="📊 Metric Segment", font=dict(size=12))),
+                zaxis=dict(title=dict(text="🔢 Count", font=dict(size=12))),
+                aspectmode="cube", camera=dict( eye=dict(x=1.5, y=1.5, z=1.2))
+            ),
+            legend=dict(title="📌 Metrics", orientation="h", yanchor="bottom", y=-0.3, x=0.5, xanchor="center"), 
+            margin=dict(l=0, r=0, t=50, b=80),  # extra bottom margin for legend
             autosize=True
         )
     
@@ -378,7 +376,6 @@ with tab_struct:
                 fig.update_layout(
                     height=380,
                     margin=dict(l=20, r=20, t=30, b=20),
-                    template='plotly_white',
                     title_font=dict(size=10)
                 )
                 cols[i % 3].plotly_chart(fig, width='stretch')
@@ -413,7 +410,7 @@ with tab_struct:
                 title=dict(
                     text="📈 <b>Daily Total System Load (CBP + HHS)</b>",
                     x=0.5, xanchor='center', yanchor='top',
-                    font=dict(size=18, family="Arial", color="black")
+                    font=dict(size=18, family="Arial")
                 ), autosize=True
             )
             st.plotly_chart(fig_daily_CPB_Plus_HHS, width='stretch')
@@ -440,7 +437,7 @@ with tab_struct:
                 title=dict(
                     text="📈 <b>Daily Net Daily Intake</b>",
                     x=0.5, xanchor='center', yanchor='top',
-                    font=dict(size=18, family="Arial", color="black")
+                    font=dict(size=18, family="Arial")
                 ), autosize=True
             )
             with col1:
@@ -468,7 +465,7 @@ with tab_struct:
                 title=dict(
                     text="📈 <b>Daily Care Load Growth Rate (%)</b>",
                     x=0.5, xanchor='center', yanchor='top',
-                    font=dict(size=18, family="Arial", color="black")
+                    font=dict(size=18, family="Arial")
                 ), autosize=True
             )
             with col2:
@@ -676,7 +673,7 @@ with tab_struct:
                     x=0.5,
                     xanchor='center',
                     yanchor='top',
-                    font=dict(size=18, family="Arial", color="black")
+                    font=dict(size=18, family="Arial")
                 ), autosize=True
             )
         
@@ -743,7 +740,7 @@ with tab_struct:
                     x=0.5,
                     xanchor='center',
                     yanchor='top',
-                    font=dict(size=18, family="Arial", color="black")
+                    font=dict(size=18, family="Arial")
                 ),
                 scene=dict(
                     xaxis_title='🍽 Net Daily Intake',
@@ -790,7 +787,7 @@ with tab_struct:
             # Daily Total System Load chart
             fig_daily_CPB_vs_HHS = px.line( df, x=df.index, y='Total System Load', labels={'Total System Load': '👶 Total Children Under Care', 'index': '📅 Date'} )
             fig_daily_CPB_vs_HHS.update_layout( template='plotly_white', hovermode='x unified', xaxis=dict( title="📅 Date", tickangle=0),
-                title=dict(text="📈 <b>📊 CBP + 🏥 HHS Daily Total System Load</b>", x=0.5, xanchor='center', yanchor='top', font=dict(size=14, family="Arial", color="black")),
+                title=dict(text="📈 <b>📊 CBP + 🏥 HHS Daily Total System Load</b>", x=0.5, xanchor='center', yanchor='top', font=dict(size=14, family="Arial")),
                 height=450 )
         
             with col1:
@@ -859,7 +856,7 @@ with tab_struct:
             fig_trends.add_trace(go.Scatter(x=weekly.index, y=weekly.values, mode='lines', name='Weekly Load'))
             fig_trends.add_trace(go.Scatter(x=monthly.index, y=monthly.values, mode='lines', name='Monthly Load'))
             fig_trends.update_layout( title=dict( text="📊 <b>Weekly and Monthly Total System Load</b>", x=0.5, xanchor='center', yanchor='top',
-                font=dict(size=18, family="Arial", color="black") ), template='plotly_white', autosize=True)
+                font=dict(size=18, family="Arial") ), autosize=True)
             st.plotly_chart(fig_trends, width='stretch')
             # Dynamic expander with stats
             with st.expander("ℹ️ More Information about this chart"):
@@ -895,7 +892,7 @@ with tab_struct:
         
             # Update layout with centered bold title
             fig_highload.update_layout(hovermode='x unified', title=dict( text=f'⚠️ <b>Total System Load with High-Load Threshold ({threshold:.0f})</b>',
-                    x=0.5, xanchor='center', yanchor='top', font=dict(size=18, family="Arial", color="black"), autosize=True
+                    x=0.5, xanchor='center', yanchor='top', font=dict(size=18, family="Arial"), automargin=True
                 )
             )
         
@@ -1042,7 +1039,7 @@ with tab_struct:
                     x=0.5,
                     xanchor='center',
                     yanchor='top',
-                    font=dict(size=18, family="Arial", color="black")
+                    font=dict(size=18, family="Arial")
                 ),
                 xaxis_title="📅 Month",
                 yaxis_title="📆 Year",
@@ -1077,12 +1074,11 @@ with tab_struct:
         fig_offset = px.line(df, x=df.index, y='Discharge Offset Ratio')
         fig_offset.add_hline(y=avg_offset, line_dash="dash", line_color="red", annotation_text=f"Avg: {avg_offset:.2f}")
         fig_offset.update_layout(
-            template='plotly_white',
             autosize=True,
             title=dict(
                 text="⚖️ <b>Discharge Offset Ratio Over Time</b>",
                 x=0.5, xanchor='center', yanchor='top',
-                font=dict(size=16, family="Arial", color="black")
+                font=dict(size=16, family="Arial")
             )
         )
         st.plotly_chart(fig_offset, width='stretch')
@@ -1112,11 +1108,10 @@ with tab_struct:
         fig_corr = px.imshow(corr, color_continuous_scale='RdBu', zmin=-1, zmax=1)
         fig_corr.update_layout(
             autosize=True,
-            template='plotly_white',
             title=dict(
                 text="📈 <b>Lag Correlation Matrix (Total System Load & lags)</b>",
                 x=0.5, xanchor='center', yanchor='top',
-                font=dict(size=16, family="Arial", color="black")
+                font=dict(size=16, family="Arial")
             )
         )
         st.plotly_chart(fig_corr, width='stretch')
@@ -1140,12 +1135,11 @@ with tab_struct:
                 labels={'Net Daily Intake': '📦 Net Daily Intake', 'Discharge Offset Ratio': '⚖️ Discharge Offset Ratio'}
             )
             fig_flow.update_layout(
-                template='plotly_white',
                 autosize=True,
                 title=dict(
                     text="🔀 <b>Net Intake vs Discharge Offset Ratio</b>",
                     x=0.5, xanchor='center', yanchor='top',
-                    font=dict(size=16, family="Arial", color="black")
+                    font=dict(size=16, family="Arial")
                 )
             )
             st.plotly_chart(fig_flow, width='stretch', key="flow_efficiency_chart")
@@ -1212,7 +1206,7 @@ with tab_struct:
                     x=0.5,
                     xanchor='center',
                     yanchor='top',
-                    font=dict(size=18, family="Arial", color="black")
+                    font=dict(size=18, family="Arial")
                 ), autosize=True
             )
         
@@ -2428,42 +2422,42 @@ with tab_reco:
         else:
             st.toast("✅ Forecasted system load remains within safe limits.", icon="📈")
 
-# -------------------------
-# Footer
-# -------------------------
-st.markdown("---")
-st.markdown(
-    """
-    <div style='text-align: center; color: white; font-size: 14px; line-height: 1.6;'>
-    
-        🎶 In halls of data, echoes rise,
-        a chorus of numbers beneath the skies.
-        From custody’s gate to care’s embrace,
-        each metric sings of a system’s pace.
+        # -------------------------
+        # Footer
+        # -------------------------
+        st.markdown("---")
+        st.markdown(
+            """
+            <div style='text-align: center; color: white; font-size: 14px; line-height: 1.6;'>
+            
+                🎶 In halls of data, echoes rise,
+                a chorus of numbers beneath the skies.
+                From custody’s gate to care’s embrace,
+                each metric sings of a system’s pace.
+                
+                🎵 The charts are strings, the plots a drum,
+                volatility hums where the children come.
+                Backlogs whisper in minor key,
+                while forecasts chant of what may be.
+                
+                🎼 So let the dashboard strike its chord,
+                balancing burdens with insight stored.
+                In harmony, trends and truths align,
+                a symphony guiding care through time.
+                
+                🔖 Created & Powered by Prathamesh Bhurke
+                
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
         
-        🎵 The charts are strings, the plots a drum,
-        volatility hums where the children come.
-        Backlogs whisper in minor key,
-        while forecasts chant of what may be.
         
-        🎼 So let the dashboard strike its chord,
-        balancing burdens with insight stored.
-        In harmony, trends and truths align,
-        a symphony guiding care through time.
-        
-        🔖 Created & Powered by Prathamesh Bhurke
-        
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-# Buttons for links
-col1, col2, col3, col4, col5, col6 = st.columns(6)
-with col3:
-    st.link_button("📂 GitHub Repository",
-                "https://github.com/Prathamesh666/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children")
-with col4:
-    st.link_button("📑 Research Paper",
-                "https://prathamesh666.github.io/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children/Research%20Paper.html")
+        # Buttons for links
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        with col3:
+            st.link_button("📂 GitHub Repository",
+                        "https://github.com/Prathamesh666/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children")
+        with col4:
+            st.link_button("📑 Research Paper",
+                        "https://prathamesh666.github.io/System-Capacity-Care-Load-Analytics-for-Unaccompanied-Children/Research%20Paper.html")
