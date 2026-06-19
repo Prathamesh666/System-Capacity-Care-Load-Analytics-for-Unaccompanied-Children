@@ -179,7 +179,6 @@ try:
     df = df_hhs.copy()
 except Exception as e:
     st.error(f"Failed to load data: {e}")
-    st.stop()
 
 # -------------------------
 # Page header
@@ -213,7 +212,7 @@ with col2:
 with col1:
     st.markdown("#### 🏥 About HHS")
     st.caption(
-        "The **U.S. Department of Health and Human Services (HHS)**, through its **Office of Refugee Resettlement (ORR): A Parent Agency Administration for Children and Families (ACF), U.S. Department of Health and Human Services**, provides shelter, healthcare, education, and case management for unaccompanied children once they are referred from CBP. "
+        "The **U.S. Department of Health and Human Services (HHS)**, through its **Office of Refugee Resettlement (ORR): A Parent Agency Administration for Children and Families (ACF)**, provides shelter, healthcare, education, and case management for unaccompanied children once they are referred from CBP. "
         "HHS ensures safe placements, reunification with sponsors, and ongoing support services. "
         "Learn more: [HHS.gov](https://www.hhs.gov)"
     )
@@ -312,6 +311,7 @@ with tab_struct:
     # -------------------------
     with s_indiv:
         st.subheader("📊 Individual Trends: Daily Metrics")
+        st.info("⚕️ Daily-Flow dynamic lanes of children in CPB custody & HHS care")
     
         children_metrics = [
             'Children apprehended and placed in CBP custody*',
@@ -321,7 +321,7 @@ with tab_struct:
             'Children discharged from HHS Care'
         ]
         # 3D consolidated flow (lanes)
-        st.markdown("#### 🌐 3D Consolidated Flow (Metric Lanes)")
+        st.markdown("#### 🌐 Metric Lanes")
     
         labels = ['🧒 Apprehended', '📦 In CBP', '🔄 Transferred out', '🏥 In HHS', '✅ Discharged']
         fig3d = go.Figure()
@@ -335,7 +335,7 @@ with tab_struct:
                     y=[i] * len(plot_df),
                     z=plot_df[m],
                     mode='lines',
-                    name=labels[i],  # emoji-enhanced labels use_container_width=True
+                    name=labels[i],  # emoji-enhanced labels
                     line=dict(width=4, color=colors[i % len(colors)])
                 ))
     
@@ -347,7 +347,7 @@ with tab_struct:
                 zaxis=dict(title=dict(text="🔢 Count", font=dict(size=12))),
                 aspectmode="cube", camera=dict( eye=dict(x=1.5, y=1.5, z=1.2))
             ),
-            legend=dict(title="📌 Metrics", orientation="h", yanchor="bottom", y=-0.3, x=0.5, xanchor="center"), 
+            legend=dict(title="📌 Metrics", orientation="h", yanchor="bottom", y=-0.4, x=0.5, xanchor="center"), 
             margin=dict(l=0, r=0, t=50, b=80),  # extra bottom margin for legend
             autosize=True
         )
@@ -385,21 +385,21 @@ with tab_struct:
         s1.metric("📌 Peak CBP Custody", f"{int(df['Children in CBP custody'].max()):,}")
         s2.metric("🏥 Peak HHS Care", f"{int(df['Children in HHS Care'].max()):,}")
         discharge_offset = (df['Children discharged from HHS Care'].sum() / max(1, df['Children transferred out of CBP custody'].sum()))
-        s3.metric("🔄 Discharge Offset (total)", f"{discharge_offset:.2f}")
+        s3.metric("🔄 Discharge Offset Ration of Total", f"{discharge_offset:.2f}")
 
     # -------------------------
     # Subtab: Derived Healthcare Metrics
     # -------------------------
     with s_kpi:
         st.subheader("Derived Healthcare Capacity Metrics")
-        st.write("Total System Load, Net Daily Intake, Growth Rate, Discharge Effectiveness, KPI surfaces, and the two KPI graphs.")
+        st.info("Total System Load, Net Daily Intake, Growth Rate, Discharge Effectiveness, KPI surfaces, and the two KPI discharge graphs.")
         
-        st.markdown("### 📈 Daily Total System Load (CBP + HHS)")
+        st.markdown("### ⚖️ Daily Flow Dynamics (CBP + HHS)")
         st.info("📊 Total System Load = CBP custody + HHS care.")
         st.success("👶 Represents the total number of children under care on any given day.")
         st.warning("⚠️ Sudden spikes may indicate operational strain or reporting anomalies.")
         try:
-            # 1. Daily Total System Load
+            # 1. Total System Load
             fig_daily_CPB_Plus_HHS = px.line(
                 df,
                 x=df.index,
@@ -424,9 +424,11 @@ with tab_struct:
                 st.success(f"✅ Average daily load: {avg_load:,.0f}. Peak load: {max_load:,.0f} on 📅 {busiest_day}.")
                 st.warning(f"⚠️ Latest value on 📅 {latest_date.date()} is {latest_val:,.0f}.")
         
+            st.markdown("### 📊 Net Intake & Care Load Growth (%)")
+            
             col1, col2 = st.columns(2)
             
-            # 2. Daily Net Daily Intake
+            # 2. Net Daily Intake
             fig_net_intake = px.line(
                 df,
                 x=df.index,
@@ -435,7 +437,7 @@ with tab_struct:
             )
             fig_net_intake.update_layout(
                 title=dict(
-                    text="📈 <b>Daily Net Daily Intake</b>",
+                    text="📈 <b>Net Daily Intake</b>",
                     x=0.5, xanchor='center', yanchor='top',
                     font=dict(size=18, family="Arial")
                 ), autosize=True
@@ -491,9 +493,8 @@ with tab_struct:
                         st.error(f"Critical Surge: Average weekly growth is {recent_growth:.2f}% — urgent attention needed to prevent overload.")
                         
             # 4. Backlog Indicator 
-            st.info("📊 Backlog Indicator: Sustained Positive Net Intake")
-            st.success("🔍 Identifies periods where net intake remained positive for consecutive days, signaling potential backlog buildup.")
-            st.warning("⚠️ Sustained positive net intake may indicate growing operational pressure and potential backlog.")       
+            st.markdown("### 📉 Backlog Risk Signals")
+            st.info("📊 Backlog Indicator: Sustained Positive Net Intake")     
             fig_backlog = px.line(
                 df,
                 x=df.index,
@@ -513,9 +514,11 @@ with tab_struct:
             st.plotly_chart(fig_backlog, width='stretch')
 
             with st.expander("ℹ️ More Information"):
-                st.info("This line chart shows the daily sustained positive net intake, "
+                st.info("ℹ️ This line chart shows the daily sustained positive net intake, "
                         "used as a backlog indicator. A value of 1 indicates periods "
                         "where intake remained positive for consecutive days.")
+                st.success("🔍 Identifies periods where net intake remained positive for consecutive days, signaling potential backlog buildup.")
+                st.warning("⚠️ Sustained positive net intake may indicate growing operational pressure and potential backlog.")  
                 
         except Exception as e:
             st.error(f"❌ Error rendering charts: {e}")
@@ -773,8 +776,8 @@ with tab_struct:
     # -------------------------
     with s_trend:
         st.subheader("Trend & Temporal Analysis")
-        st.write("Daily, weekly, monthly trends, heatmap, flow efficiency, lag analysis, and future predictions preview.")
-        st.write("### 📈 Daily Total System Load (CBP +/vs HHS)")
+        st.info("Daily, weekly, monthly trends, heatmap, flow efficiency, lag analysis, and future predictions preview.")
+        st.markdown("### 📈 Daily Total System Load (CBP +/vs HHS)")
         col1, col2 = st.columns(2)
         # 4.0 Daily total system load
         try:
@@ -855,8 +858,9 @@ with tab_struct:
             fig_trends = go.Figure()
             fig_trends.add_trace(go.Scatter(x=weekly.index, y=weekly.values, mode='lines', name='Weekly Load'))
             fig_trends.add_trace(go.Scatter(x=monthly.index, y=monthly.values, mode='lines', name='Monthly Load'))
-            fig_trends.update_layout( title=dict( text="📊 <b>Weekly and Monthly Total System Load</b>", x=0.5, xanchor='center', yanchor='top',
-                font=dict(size=18, family="Arial") ), autosize=True)
+            fig_trends.update_layout( title=dict( text="📊 <b>Weekly and Monthly Total System Load</b>", x=0.5, xanchor='center', yanchor='top', 
+                automargin=True, font=dict(size=18, family="Arial") ), 
+                legend=dict(title="📌 Trends", orientation="h", yanchor="bottom", y=-0.4, x=0.5, xanchor="center"), autosize=True)
             st.plotly_chart(fig_trends, width='stretch')
             # Dynamic expander with stats
             with st.expander("ℹ️ More Information about this chart"):
@@ -887,13 +891,13 @@ with tab_struct:
             # Highlight high-load points
             fig_highload.add_trace(
                 go.Scatter( x=high_load_periods.index, y=high_load_periods['Total System Load'], mode='markers', 
-                        marker=dict(color='red', size=8, symbol="diamond"), name='🔥 High Load Periods' )
+                        marker=dict(color='red', size=8, symbol="diamond"), name='High Load Periods 🔥' )
             )
         
             # Update layout with centered bold title
             fig_highload.update_layout(hovermode='x unified', title=dict( text=f'⚠️ <b>Total System Load with High-Load Threshold ({threshold:.0f})</b>',
                     x=0.5, xanchor='center', yanchor='top', font=dict(size=18, family="Arial"), automargin=True
-                )
+                ), legend=dict(title="📌 Metric", orientation="h", yanchor="bottom", y=-0.4, x=0.5, xanchor="center"), autosize=True
             )
         
             # Render chart in Streamlit with unique key
@@ -951,8 +955,8 @@ with tab_struct:
             fig_timeline_comparison = make_subplots(
                 rows=2, cols=1,
                 subplot_titles=[
-                    f'Total System Load: Early Timeline ({early_period_start.date()} to {early_period_end.date()})',
-                    f'Total System Load: Late Timeline ({late_period_start.date()} to {late_period_end.date()})'
+                    f'Early Timeline ({early_period_start.date()} to {early_period_end.date()})',
+                    f'Late Timeline ({late_period_start.date()} to {late_period_end.date()})'
                 ],
                 shared_xaxes=False
             )
@@ -972,7 +976,8 @@ with tab_struct:
             # Layout
             fig_timeline_comparison.update_layout(
                 title_text="<b>Comparison Across Custom Periods: Total System Load</b>",
-                hovermode='x unified', autosize=True,
+                hovermode='x unified', autosize=True, 
+                legend=dict(title="📌 Scale", orientation="h", yanchor="bottom", y=-0.4, x=0.5, xanchor="center"), 
                 title=dict(x=0.5, xanchor='center', font=dict(size=17))
             )
     
@@ -1288,6 +1293,7 @@ with tab_struct:
                     yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
                 ),
+                margin=dict(l=0, r=0, b=50, t=50),
                 scene=dict(
                     xaxis_title='📆 Day of Week (0=Mon, 6=Sun)',
                     yaxis_title='🗓 Month (1=Jan, 12=Dec)',
@@ -1316,8 +1322,10 @@ with tab_struct:
     # Subtab: Pressure & Stress (separate as requested)
     # -------------------------
     with s_pressure:
-        st.subheader("Pressure & Stress Identification (separate tab)")
-        st.write("Rolling averages, strain windows, composite stress surfaces, OPI over time, and 3D stress/pressure heatmaps.")
+        st.subheader("Pressure & Stress Systems")
+        st.info("Rolling Averages, Strain Windows, 3D Load-Variability Maps & Stress/Pressure Heatmaps.")
+        
+        st.markdown("### 🔄 Daily Load With Rolling Trends")
 
         # Default rolling averages
         df['7-Day Rolling Avg Load'] = df['Total System Load'].rolling(window=7).mean()
@@ -1384,6 +1392,7 @@ with tab_struct:
                     x=0.5, xanchor='center', yanchor='top',
                     font=dict(size=18, family="Arial", color="black")
                 ),
+                legend=dict(title="📌 Rolling Trends", orientation="h", yanchor="bottom", y=-0.4, x=0.5, xanchor="center"), 
                 xaxis_title="📅 Date",
                 yaxis_title="👶 Total Children Under Care",
                 template="plotly_white",
@@ -1445,7 +1454,7 @@ with tab_struct:
         strain = df[(df['Sustained Positive Net Intake'] == 1) & (df['High Load'] == 1)].copy()
 
         # Detection of prolonged strain windows
-        st.markdown("### Detected Strain Windows on Total System Load Graph")
+        st.markdown("### ⚡ Prolonged Strain Windows on Total System Load")
         df['Sustained Positive Net Intake'] = ( (df['Net Daily Intake'] > 0) .rolling(window=3) .apply(lambda x: x.all(), raw=True) .fillna(0) )
         mean_load = df['Total System Load'].mean()
         df['High Load'] = (df['Total System Load'] > mean_load).astype(int)
@@ -1485,6 +1494,7 @@ with tab_struct:
                         text="📈 <b>Detected Strain Windows on Total System Load</b>",
                         x=0.5, xanchor='center'
                     ),
+                    legend=dict(title="📌 Scale", orientation="h", yanchor="bottom", y=-0.4, x=0.5, xanchor="center"), 
                     xaxis_title="📅 Date",
                     yaxis_title="👶 Total Children Under Care",
                     template="plotly_white",
@@ -1505,6 +1515,8 @@ with tab_struct:
         except Exception as e:
             st.error(f"❌ Error rendering strain windows chart: {e}")
         
+        
+        st.markdown("### 🌐 3D Load–Variability–Intake Map")
         try:
             # Ensure dataframe index is named 'Date'
             if df.index.name != 'Date':
@@ -1557,6 +1569,7 @@ with tab_struct:
                 st.warning("⚠️ High variability may indicate unstable intake patterns requiring closer monitoring.")
         
             # --- Second 3D Scatter Plot: Load, Variability, Strain Windows ---
+            st.markdown("### 🌐 3D Load–Variability–Strain Map")
             fig_2 = go.Figure(data=[
                 go.Scatter3d(
                     x=df['Total System Load'],
@@ -1584,7 +1597,7 @@ with tab_struct:
                     x=0.5,
                     xanchor='center',
                     yanchor='top',
-                    font=dict(size=18, family="Arial", color="black")
+                    font=dict(size=18, family="Arial")
                 ), autosize=True
             )
         
@@ -1600,6 +1613,8 @@ with tab_struct:
         except Exception as e:
             st.error(f"❌ Error rendering 3D scatter plots: {e}")
 
+        
+        st.markdown("### 💢 Stress-Pressure Dynamics")
         try:
             # Ensure required columns exist and handle NaNs
             required_cols = ['Total System Load', '7-Day Rolling Std Dev Load', 'Net Daily Intake', 'Sustained Positive Net Intake', 'High Load']
@@ -1779,14 +1794,35 @@ with tab_reco:
     st.caption("📊 **Evaluation** — Compare baseline vs engineered features, visualize accuracy, and assess volatility.")
     st.caption("🔮 **Forecasts & Recommendations** — Generate forward-looking predictions and provide decision-ready recommendations.")
     
-    r_features, r_models, r_forecasts = st.tabs(["🧩 Feature Engineering", "🧪 Modeling & Evaluation", "🚨 Alert & 🔮 Future Predictions"])
+    # -------------------------
+    # Top KPIs — Recommendational Forecasts
+    # -------------------------
+    st.markdown("### 📊 Top Key Performance Indicators (KPIs)")
+    
+    df['Inflow_Velocity'] = df['Children transferred out of CBP custody'].rolling(window=3).mean() - df['Children transferred out of CBP custody'].rolling(window=10).mean()
+    df['Operational_Pressure_Index'] = (df['Net Daily Intake'].rolling(window=7).mean() / (df['7-Day Rolling Std Dev Load'] + 1)).fillna(0)
+    opi_mean = df['Operational_Pressure_Index'].mean()
+    opi_std = df['Operational_Pressure_Index'].std()
+    df['High_Pressure_Alert'] = (df['Operational_Pressure_Index'] > (opi_mean + opi_std)).astype(int)
+    
+    c1, c2, c3 = st.columns(3)
+    
+    # First row of KPIs
+    c1.metric("📈 Current OPI", f"{df['Operational_Pressure_Index'].iloc[-1]:.2f}")
+    c2.metric("⚡ Inflow Velocity Rate", f"{df['Inflow_Velocity'].iloc[-1]:.2f}", 
+            delta=f"{df['Inflow_Velocity'].iloc[-1] - df['Inflow_Velocity'].iloc[-2]:.2f}")
+    c3.metric("🚨 High Pressure Alerts", int(df['High_Pressure_Alert'].sum()))
+    
+    r_features, r_models, r_forecasts, r_future = st.tabs(["🧩 Feature Engineering", "🧪 Modeling & Evaluation", "🚨 Alerts & Velocity", "🔮 Future Predictions"])
         
     df_ml = df.copy()
     # -------------------------
-    # Feature Engineering
+    # Feature Engineering 
     # -------------------------
     with r_features:
-        st.subheader("Feature Engineering")
+        st.subheader("🔗 Feature Engineering")
+        st.info("🧩 Lags, Rolling Statistics, & Date-based Features")
+        st.markdown("### Lag Correlation")
         
         try:
             # Create lag features dynamically
@@ -1848,11 +1884,9 @@ with tab_reco:
             df_ml.replace([np.inf, -np.inf], np.nan, inplace=True)
             df_ml.dropna(inplace=True)
     
-            with st.expander("Sample engineered features (first 6 rows):"):
-                st.dataframe(df_ml.head(6), width='stretch')
-    
             # Feature distributions and pairwise scatter for top features
             with st.expander("Feature distributions & pairwise scatter"):
+                st.dataframe(df_ml.head(6), width='stretch')
                 top_features = ['lag_1', 'lag_7', 'roll_mean_7', 'roll_std_7', 'Net Daily Intake']
                 cols = st.columns(2)
                 for i, f in enumerate(top_features):
@@ -1873,6 +1907,7 @@ with tab_reco:
             df_ml[f'Load_Rolling_Mean_{window}d'] = df_ml['Total System Load'].rolling(window=window).mean().shift(1)
             df_ml[f'Load_Rolling_Std_{window}d'] = df_ml['Total System Load'].rolling(window=window).std().shift(1)
         
+        st.markdown("### 🔗 Feature Interaction Matrix")
         try:
             # Build 3D scatter plot
             fig_interaction = go.Figure(data=[go.Scatter3d(
@@ -1922,6 +1957,7 @@ with tab_reco:
         df_ml['Year'] = df_ml.index.year
         df_ml['Week_of_Year'] = df_ml.index.isocalendar().week.astype(int)
         df_ml['Is_Weekend'] = (df_ml.index.dayofweek >= 5).astype(int) # 1 for weekend, 0 for weekday
+        st.markdown("### 🔄 Weekly ↔ Monthly Load Patterns")
         
         try:
             # --- Day of Week Distribution ---
@@ -1990,7 +2026,7 @@ with tab_reco:
     # -------------------------
     with r_models:
         st.subheader("⚙️ Modeling & Evaluation")
-        st.write("Train regression and classification models. Enable modeling in the sidebar to run training.")
+        st.info("🧪 Train regression and classification models to view their visualizations for best insights.")
     
         # -------------------------
         # Regression Setup
@@ -2015,98 +2051,122 @@ with tab_reco:
         # Regression Models UI
         # -------------------------
         st.subheader("📈 Regression Models")
-    
+        
         model_list = [m for m in figures_reg.keys() if m != "Performance Heatmap"]
         selected_model = st.selectbox("🔍 Choose Regression Model:", model_list)
-        st.plotly_chart(figures_reg[selected_model], width='stretch')
-    
+        st.plotly_chart(figures_reg[selected_model], width='stretch', key=f"{selected_model}_chart")
+        
         with st.expander("📑 Regression Model Insights"):
-            mae = performance_df_reg.at[selected_model, "MAE"]
-            rmse = performance_df_reg.at[selected_model, "RMSE"]
+            mae, rmse = performance_df_reg.at[selected_model, "MAE"], performance_df_reg.at[selected_model, "RMSE"]
             st.info(f"ℹ️ Selected model: **{selected_model}**")
             st.success(f"✅ MAE: {mae:.2f}")
             st.warning(f"⚠️ RMSE: {rmse:.2f}")
-    
-        # Separate heatmap
-        st.subheader("📊 Regression Performance Comparison Heatmap")
-        st.plotly_chart(figures_reg["Performance Heatmap"], width='stretch')
-    
-        with st.expander("📑 Heatmap Insights"):
+        
+        # -------------------------
+        # Performance Comparison Visualizations
+        # -------------------------
+        st.subheader("📊 Regression Performance Comparison")
+        
+        # Build extra figures once
+        df_perf = performance_df_reg.reset_index()
+        figures_reg.setdefault("3D Scatter", px.scatter_3d(
+            df_perf, x="MAE", y="RMSE", z="index",
+            color="index", hover_name="index",
+            title="3D Scatter: Regression Performance"
+        ))
+        figures_reg.setdefault("3D Surface", go.Figure(data=[go.Surface(
+            z=[[mae] for mae in df_perf["MAE"]]
+        )]).update_layout(
+            title="3D Surface: Regression Performance Landscape",
+            scene=dict(xaxis_title="Model Index", yaxis_title="Metric Axis", zaxis_title="MAE")
+        ))
+        
+        viz_option = st.selectbox("🎨 Choose Regression Visualization:", ["Heatmap", "3D Scatter", "3D Surface"])
+        
+        st.plotly_chart(figures_reg[viz_option if viz_option != "Heatmap" else "Performance Heatmap"],
+                        width='stretch', key=f"{viz_option}_chart")
+        
+        with st.expander("Regression Performance Insights"):
             best_model = performance_df_reg["MAE"].idxmin()
             worst_model = performance_df_reg["MAE"].idxmax()
             st.success(f"🏆 Best model by MAE: **{best_model}** ({performance_df_reg['MAE'].min():.2f})")
             st.warning(f"⚠️ Worst model by MAE: **{worst_model}** ({performance_df_reg['MAE'].max():.2f})")
-            st.info("ℹ️ Heatmap shows all models together for quick comparison.")
+            st.info(f"ℹ️ {viz_option} shows all regression models together for quick comparison.")
         
+        # -------------------------
+        # Toast Alerts
+        # -------------------------
         if performance_df_reg['MAE'].min() > 500:
-            st.toast("⚠️ Regression models show high error — retraining recommended.", icon="⚠️")
+            st.toast("⚠️ Regression models show high error.", icon="⚠️")
         else:
             st.toast("✅ Regression models performing within acceptable error bounds.", icon="📊")
     
         # -------------------------
         # Classification Setup
         # -------------------------
-        high_load_threshold = df_ml['Total System Load'].quantile(0.75)
-        low_load_threshold = df_ml['Total System Load'].quantile(0.25)
-    
-        def get_load_category(load):
-            if load >= high_load_threshold:
-                return 'High'
-            elif load <= low_load_threshold:
-                return 'Low'
-            else:
-                return 'Medium'
-    
-        df_ml['Load_Category'] = df_ml['Total System Load'].apply(get_load_category)
-    
-        target_variable_clf = 'Load_Category'
-        features_clf = [col for col in df_ml.columns if col not in [target_variable_clf, 'Total System Load', 'Day_Label', 'Month_Label']]
-    
-        X_clf = df_ml[features_clf]
-        y_clf = df_ml[target_variable_clf]
-    
-        label_encoder = LabelEncoder()
-        y_clf_encoded = label_encoder.fit_transform(y_clf)
-    
-        X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(
-            X_clf, y_clf_encoded, test_size=0.3, shuffle=False
-        )
-    
-        imputer = SimpleImputer(strategy="mean")
-        X_train_clf_imputed = imputer.fit_transform(X_train_clf)
-        X_test_clf_imputed = imputer.transform(X_test_clf)
-    
-        scaler_clf = StandardScaler()
-        X_train_clf_scaled = scaler_clf.fit_transform(X_train_clf_imputed)
-        X_test_clf_scaled = scaler_clf.transform(X_test_clf_imputed)
-    
-        X_train_clf_scaled = pd.DataFrame(np.asarray(X_train_clf_scaled), columns=X_train_clf.columns, index=X_train_clf.index)
-        X_test_clf_scaled = pd.DataFrame(np.asarray(X_test_clf_scaled), columns=X_test_clf.columns, index=X_test_clf.index)
-    
-        # -------------------------
-        # Classification Models UI
-        # -------------------------
-        st.subheader("🧮 Classification Models")
-    
-        figures_clf, performance_df_clf = train_and_evaluate_classifiers(
-            X_train_clf_scaled, y_train_clf, X_test_clf_scaled, y_test_clf, label_encoder
-        )
-    
-        st.markdown("### 📊 Classification: Load Category (Low / Medium / High)")
-        # 📦 Load category distribution with expander
-        st.markdown("##### 📦 Load Category Distribution")
-        st.bar_chart(df_ml['Load_Category'].value_counts())
-        st.info("ℹ️ This chart shows how many days fall into each load category.")
-        with st.expander("🔎 How Categories Were Defined"):
-            st.success(f"🏆 High Load: Days where 'Total System Load' ≥ 75th percentile ({high_load_threshold:.2f})")
-            st.warning(f"⚠️ Low Load: Days where 'Total System Load' ≤ 25th percentile ({low_load_threshold:.2f})")
-            st.info("ℹ️ Medium Load: All days between the 25th and 75th percentile thresholds")
-    
-        selected_viz = st.selectbox("🔍 Choose Classification Visualization:", list(figures_clf.keys()))
-        st.plotly_chart(figures_clf[selected_viz], width='stretch')
-    
-        with st.expander("📑 Classification Model Insights"):
-            if selected_viz == "Performance Heatmap":
+        try:
+                
+            high_load_threshold = df_ml['Total System Load'].quantile(0.75)
+            low_load_threshold = df_ml['Total System Load'].quantile(0.25)
+        
+            def get_load_category(load):
+                if load >= high_load_threshold:
+                    return 'High'
+                elif load <= low_load_threshold:
+                    return 'Low'
+                else:
+                    return 'Medium'
+        
+            df_ml['Load_Category'] = df_ml['Total System Load'].apply(get_load_category)
+        
+            target_variable_clf = 'Load_Category'
+            features_clf = [col for col in df_ml.columns if col not in [target_variable_clf, 'Total System Load', 'Day_Label', 'Month_Label']]
+        
+            X_clf = df_ml[features_clf]
+            y_clf = df_ml[target_variable_clf]
+        
+            label_encoder = LabelEncoder()
+            y_clf_encoded = label_encoder.fit_transform(y_clf)
+        
+            X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(
+                X_clf, y_clf_encoded, test_size=0.3, shuffle=False
+            )
+        
+            imputer = SimpleImputer(strategy="mean")
+            X_train_clf_imputed = imputer.fit_transform(X_train_clf)
+            X_test_clf_imputed = imputer.transform(X_test_clf)
+        
+            scaler_clf = StandardScaler()
+            X_train_clf_scaled = scaler_clf.fit_transform(X_train_clf_imputed)
+            X_test_clf_scaled = scaler_clf.transform(X_test_clf_imputed)
+        
+            X_train_clf_scaled = pd.DataFrame(np.asarray(X_train_clf_scaled), columns=X_train_clf.columns, index=X_train_clf.index)
+            X_test_clf_scaled = pd.DataFrame(np.asarray(X_test_clf_scaled), columns=X_test_clf.columns, index=X_test_clf.index)
+        
+            # -------------------------
+            # Classification Models UI
+            # -------------------------
+            st.subheader("🧮 Classification Models")
+        
+            figures_clf, performance_df_clf = train_and_evaluate_classifiers(
+                X_train_clf_scaled, y_train_clf, X_test_clf_scaled, y_test_clf, label_encoder
+            )
+        
+            st.markdown("### 📊 Classification: Load Category (Low / Medium / High)")
+            # 📦 Load category distribution with expander
+            st.markdown("##### 📦 Load Category Distribution")
+            st.bar_chart(df_ml['Load_Category'].value_counts())
+            st.info("ℹ️ This chart shows how many days fall into each load category.")
+            with st.expander("🔎 How Categories Were Defined"):
+                st.success(f"🏆 High Load: Days where 'Total System Load' ≥ 75th percentile ({high_load_threshold:.2f})")
+                st.warning(f"⚠️ Low Load: Days where 'Total System Load' ≤ 25th percentile ({low_load_threshold:.2f})")
+                st.info("ℹ️ Medium Load: All days between the 25th and 75th percentile thresholds")
+        
+            st.subheader("📊 Classification Performance Comparison")
+            selected_viz = st.selectbox("🔍 Choose Classification Visualization:", list(figures_clf.keys()))
+            st.plotly_chart(figures_clf[selected_viz], width='stretch')
+        
+            with st.expander("📑 Classification Performance Insights"):
                 best_model = performance_df_clf.sort_values(
                     by=['F1-Score','Accuracy','Recall'], ascending=[False,False,False]
                 ).iloc[0]
@@ -2117,15 +2177,17 @@ with tab_reco:
                         f"(F1={best_model['F1-Score']:.3f}, Acc={best_model['Accuracy']:.3f})")
                 st.warning(f"⚠️ Worst Classification Model: **{worst_model['Model']}** "
                         f"(F1={worst_model['F1-Score']:.3f}, Acc={worst_model['Accuracy']:.3f})")
-                st.info("ℹ️ Heatmap shows all models together for quick comparison.")
-            else:
-                st.info("ℹ️ Use the heatmap to compare all models together.")
+                st.info(f"ℹ️ {selected_viz} shows all classification models together for quick comparison.")
+                
+        except Exception as e:
+            st.warning("Not enough data for classification")
     
     # -------------------------
     # Forecasts & Recommendations
     # -------------------------
     with r_forecasts:
-        st.subheader("🚨 Alert & 🔮 Future Predictions")
+        st.subheader("🚨 Alert & Velocity")
+        st.info("🔮 Tracking OPI Trends + Strain Events, Inflow Velocity (%) and Pressure-Stress System Load Dynamics.")
         st.subheader("📊 Operational Pressure Index (OPI)")
         
         df['Inflow_Velocity'] = df['Children transferred out of CBP custody'].rolling(window=3).mean() - df['Children transferred out of CBP custody'].rolling(window=10).mean()
@@ -2177,7 +2239,7 @@ with tab_reco:
                 x=0.5,
                 xanchor='center',
                 font=dict(size=17)
-            ),
+            ), legend=dict(title="📌 Scale", orientation="h", yanchor="bottom", y=-0.4, x=0.5, xanchor="center"), 
             xaxis_title='Date',
             yaxis_title='Pressure Score', autosize=True
         )
@@ -2216,7 +2278,7 @@ with tab_reco:
         # -------------------------
         # 3D Pressure Surface (OPI vs Load vs Variability)
         # -------------------------
-        st.markdown("### 🌐 3D Pressure Surface (OPI vs Load vs Variability)")
+        st.markdown("### 🌐 3D Pressure Landscape (Load–Variability–OPI)")
         
         df_pressure = df.dropna(
             subset=['Operational_Pressure_Index', 'Total System Load', '7-Day Rolling Std Dev Load']
@@ -2242,13 +2304,13 @@ with tab_reco:
                     ), autosize=True,
                     template='plotly_white'
                 )
-                st.plotly_chart(fig_pressure, width='stretch', key="pressure_surface_3d")
+                st.plotly_chart(fig_pressure, width='stretch', key="pressure_landscape_3d")
         
                 # Dynamic insights
-                with st.expander("📑 Pressure Surface Insights"):
-                    st.info("ℹ️ The pressure surface shows where load and variability combine to create high OPI.")
+                with st.expander("📑 Pressure Landscape Insights"):
+                    st.info("ℹ️ The pressure landscape shows where load and variability combine to create high OPI.")
                     st.success(f"✅ Current OPI: {df['Operational_Pressure_Index'].iloc[-1]:.2f}")
-                    st.warning("⚠️ Use this surface to define operational thresholds and trigger rules.")
+                    st.warning("⚠️ Use this landscape to define operational thresholds and trigger rules.")
         
                 # Toast alerts based on OPI
                 current_opi = df['Operational_Pressure_Index'].iloc[-1]
@@ -2258,12 +2320,145 @@ with tab_reco:
                     st.toast("✅ Current OPI is within safe limits.", icon="📈")
         
             except Exception:
-                st.error("❌ Unable to interpolate pressure surface for current data slice.")
-                st.toast("⚠️ Pressure surface interpolation failed.", icon="⚠️")
+                st.error("❌ Unable to interpolate pressure landscape for current data slice.")
+                st.toast("⚠️ Pressure landscape interpolation failed.", icon="⚠️")
         
         else:
-            st.info("ℹ️ Insufficient data or 3D disabled for pressure surface.")
+            st.info("ℹ️ Insufficient data or 3D disabled for pressure landscape.")
             st.toast("⚠️ No data available for 3D pressure surface.", icon="⚠️")
+        
+        # -------------------------
+        # Dynamic Streamlit chart for Inflow Velocity
+        # -------------------------
+        st.markdown("### 🌊 Inflow Velocity Over Time")
+        
+        fig_inflow_velocity = px.line(
+            df,
+            x=df.index,
+            y='Inflow_Velocity',
+            title='<b>Inflow Velocity Over Time</b>',
+            labels={'Inflow_Velocity': 'Inflow Velocity', 'index': 'Date'},
+            line_shape='linear'
+        )
+        
+        fig_inflow_velocity.update_layout(
+            template='plotly_white',
+            xaxis_title='Date',
+            yaxis_title='Inflow Velocity',
+            hovermode='x unified',
+            autosize=True,
+            title=dict(x=0.5, xanchor='center')
+        )
+        
+        st.plotly_chart(fig_inflow_velocity, width='stretch')
+        
+        # -------------------------
+        # Insights Expander
+        # -------------------------
+        with st.expander("📑 Inflow Velocity Insights"):
+            st.info("ℹ️ Inflow Velocity measures the short-term intake speed relative to longer-term discharge trends.")
+            
+            latest_inflow_value = df['Inflow_Velocity'].iloc[-1]
+            latest_inflow_date = df.index[-1].strftime("%Y-%m-%d")
+            
+            st.success(f"🌊 Latest Inflow Velocity: {latest_inflow_value:.2f} 📅 {latest_inflow_date}")
+            
+            # Warning threshold (mean + std)
+            inflow_threshold = df['Inflow_Velocity'].mean() + df['Inflow_Velocity'].std()
+            if latest_inflow_value > inflow_threshold:
+                st.warning(f"⚠️ Current inflow velocity ({latest_inflow_value:.2f}) exceeds the alert threshold ({inflow_threshold:.2f}).")
+                st.toast(f"🚨 Inflow velocity spike detected on 📅 {latest_inflow_date}!", icon="🔥")
+            else:
+                st.info(f"✅ Current inflow velocity ({latest_inflow_value:.2f}) is within safe limits.")
+                st.toast(f"📈 Inflow velocity stable on 📅 {latest_inflow_date}.", icon="📈")
+        
+        # -------------------------
+        # Dynamic Streamlit 3D Scatter for Inflow Velocity
+        # -------------------------
+        st.markdown("### 🌀 Tri‑Axis Pressure-Stress System Dynamics")
+        
+        # Ensure relevant columns are not NaN for plotting
+        df_3d_inflow = df.dropna(subset=['Inflow_Velocity', 'Operational_Pressure_Index', 'Total System Load']).copy()
+        
+        if not df_3d_inflow.empty:
+            fig_inflow_3d = go.Figure(data=[
+                go.Scatter3d(
+                    x=df_3d_inflow['Operational_Pressure_Index'],
+                    y=df_3d_inflow['Total System Load'],
+                    z=df_3d_inflow['Inflow_Velocity'],
+                    mode='markers',
+                    marker=dict(
+                        size=5,
+                        color=df_3d_inflow['Inflow_Velocity'],  # Color by Inflow Velocity
+                        colorscale='Jet',
+                        opacity=0.8,
+                        colorbar=dict(title='<b>Inflow Velocity</b>', x=1.0)
+                    ),
+                    text=[
+                        f"📅 {date.strftime('%Y-%m-%d')}<br>OPI: {opi:.2f}<br>Total Load: {tsl:.0f}<br>Inflow Velocity: {iv:.2f}"
+                        for date, opi, tsl, iv in zip(
+                            df_3d_inflow.index,
+                            df_3d_inflow['Operational_Pressure_Index'],
+                            df_3d_inflow['Total System Load'],
+                            df_3d_inflow['Inflow_Velocity']
+                        )
+                    ],
+                    hoverinfo='text'
+                )
+            ])
+        
+            fig_inflow_3d.update_layout(
+                scene=dict(
+                    xaxis_title='Operational Pressure Index',
+                    yaxis_title='Total System Load',
+                    zaxis_title='Inflow Velocity'
+                ),
+                title=dict(
+                    text='<b>3D Scatter Plot: Inflow Velocity vs. Operational Pressure & Total Load</b>',
+                    x=0.5,
+                    xanchor='center',
+                    font=dict(size=17)
+                ),
+                autosize=True,
+                template='plotly_white'
+            )
+        
+            st.plotly_chart(fig_inflow_3d, width='stretch')
+        
+            # -------------------------
+            # Insights Expander
+            # -------------------------
+            with st.expander("📑 3D Pressure–Stress Insights"):
+                latest_iv = df_3d_inflow['Inflow_Velocity'].iloc[-1]
+                latest_opi = df_3d_inflow['Operational_Pressure_Index'].iloc[-1]
+                latest_load = df_3d_inflow['Total System Load'].iloc[-1]
+                latest_date = df_3d_inflow.index[-1].strftime("%Y-%m-%d")
+            
+                st.info("ℹ️ This 3D scatter visualizes how **inflow velocity** interacts with the **Operational Pressure Index (OPI)** and **Total System Load**, highlighting stress dynamics in the system.")
+                
+                st.success(
+                    f"📅 {latest_date} | 🌊 Inflow Velocity: {latest_iv:.2f} | "
+                    f"📈 Total Load: {latest_load:.0f} | 🔧 OPI: {latest_opi:.2f}"
+                )
+            
+                # Threshold warning based on inflow velocity relative to system stress
+                inflow_threshold = df_3d_inflow['Inflow_Velocity'].mean() + df_3d_inflow['Inflow_Velocity'].std()
+                if latest_iv > inflow_threshold:
+                    st.warning(
+                        f"⚠️ Stress Alert: Inflow velocity ({latest_iv:.2f}) is above the system’s safe threshold ({inflow_threshold:.2f}), "
+                        f"indicating potential overload pressure."
+                    )
+                    st.toast(f"🚨 System stress spike detected on 📅 {latest_date}!", icon="🔥")
+                else:
+                    st.info(
+                        f"✅ Current inflow velocity ({latest_iv:.2f}) remains within safe limits, "
+                        f"suggesting balanced intake relative to system load."
+                    )
+                    st.toast(f"📈 System stress stable on 📅 {latest_date}.", icon="📈")
+            
+        else:
+            st.info("ℹ️ Insufficient data for 3D inflow scatter plot.")
+            st.toast("⚠️ No data available for 3D inflow visualization.", icon="⚠️")
         
         # -------------------------
         # Final Pressure & Stress Insights
@@ -2273,6 +2468,14 @@ with tab_reco:
         p1.metric("Current OPI", f"{df['Operational_Pressure_Index'].iloc[-1]:.2f}")
         p2.metric("High Pressure Alerts", int(df['High_Pressure_Alert'].sum()))
         p3.metric("Recent Inflow Velocity", f"{df['Inflow_Velocity'].iloc[-1]:.1f}")
+        # Inflow Velocity Rate (change vs previous day)
+        inflow_rate = df['Inflow_Velocity'].iloc[-1] - df['Inflow_Velocity'].iloc[-2]
+        p1.metric("Inflow Velocity Rate", f"{df['Inflow_Velocity'].iloc[-1]:.2f}", delta=f"{inflow_rate:.2f}")
+        # Pressure–Stress Coupling Index (OPI × Inflow / Variability)
+        coupling_index = (
+            df['Operational_Pressure_Index'].iloc[-1] * df['Inflow_Velocity'].iloc[-1]
+        ) / (df['7-Day Rolling Std Dev Load'].iloc[-1] + 1)
+        p2.metric("Pressure–Stress Coupling Index", f"{coupling_index:.2f}")
         
         # Toast for high pressure alerts
         if df['High_Pressure_Alert'].sum() > 0:
@@ -2280,7 +2483,7 @@ with tab_reco:
         else:
             st.toast("✅ No high-pressure alerts detected.", icon="✅")
         
-        
+    with r_future:
         st.subheader("🔮 Future Forecasting (GBR Model)")
         # -------------------------
         # User control: prediction horizon
@@ -2296,6 +2499,12 @@ with tab_reco:
         # Convert months to days (approximate 30.4 days per month)
         future_steps = int(months_to_predict * 30.4)
         st.info(f"📊 Forecasting for the next **{months_to_predict} months** (~{future_steps} days).")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.info("📈 Total System Load — the overall number of children currently in HHS care, representing the cumulative demand placed on the system.")
+        with col2:
+            st.info("🌊 Inflow Velocity — the rate at which children are transferred out of CBP custody, measured as short‑term intake speed relative to longer‑term discharge trends.")
         
         if months_to_predict >= 18:
             st.toast("⚠️ Long forecast horizon — reliability decreases.", icon="⚠️")
@@ -2351,12 +2560,12 @@ with tab_reco:
         future_X['Is_Weekend'] = (future_index.dayofweek >= 5).astype(int)
         
         # Cyclical features
-        future_X['Day_of_Week_sin'] = np.sin(2 * np.pi * future_X['Day_of_Week'] / 7)
-        future_X['Day_of_Week_cos'] = np.cos(2 * np.pi * future_X['Day_of_Week'] / 7)
-        future_X['Month_sin'] = np.sin(2 * np.pi * future_X['Month'] / 12)
-        future_X['Month_cos'] = np.cos(2 * np.pi * future_X['Month'] / 12)
-        future_X['Day_of_Month_sin'] = np.sin(2 * np.pi * future_X['Day_of_Month'] / 31)
-        future_X['Day_of_Month_cos'] = np.cos(2 * np.pi * future_X['Day_of_Month'] / 31)
+        future_X['Day_of_Week_sin'] = np.sin(2 * np.pi * future_X['Day_of_Week'].astype(float) / 7)
+        future_X['Day_of_Week_cos'] = np.cos(2 * np.pi * future_X['Day_of_Week'].astype(float) / 7)
+        future_X['Month_sin'] = np.sin(2 * np.pi * future_X['Month'].astype(float) / 12)
+        future_X['Month_cos'] = np.cos(2 * np.pi * future_X['Month'].astype(float) / 12)
+        future_X['Day_of_Month_sin'] = np.sin(2 * np.pi * future_X['Day_of_Month'].astype(float) / 31)
+        future_X['Day_of_Month_cos'] = np.cos(2 * np.pi * future_X['Day_of_Month'].astype(float) / 31)
         
         # -------------------------
         # Direct forecast (no iterative loop)
@@ -2369,50 +2578,8 @@ with tab_reco:
         future_forecast = future_forecast.clip(lower=0)
         
         # -------------------------
-        # Plot historical + forecast
-        # -------------------------
-        fig = go.Figure()
-        
-        fig.add_trace(go.Scatter(
-            x=df_ml.index,
-            y=df_ml['Total System Load'],
-            mode='lines',
-            name='Historical Actuals',
-            line=dict(color='blue')
-        ))
-        
-        fig.add_trace(go.Scatter(
-            x=future_forecast.index,
-            y=future_forecast,
-            mode='lines',
-            name='Direct Forecast (GBR Model)',
-            line=dict(color='red', dash='dash')
-        ))
-        
-        fig.update_layout(
-            title='Total System Load: Historical Data and Direct Forecast',
-            xaxis_title='Date',
-            yaxis_title='Total System Load',
-            template='plotly_white',
-            hovermode='x unified',
-            legend=dict(x=0.01, y=0.99, bordercolor="Black", borderwidth=1),
-            autosize=True
-        )
-        
-        st.plotly_chart(fig, width='stretch')
-        
-        # -------------------------
-        # Insights Expanders
-        # -------------------------
-        with st.expander("📑 Forecast Insights"):
-            st.info("ℹ️ Forecast is generated using a Gradient Boosting Regressor retrained on the full dataset using date-based & additonal cylindrical features such as ['Day_of_Week_sin', 'Day_of_Week_cos', 'Month_sin', 'Month_cos', 'Day_of_Month_sin', 'Day_of_Month_cos'].")
-            st.success(f"✅ Generated {len(future_forecast)} direct future predictions.")
-            st.warning("⚠️ Accuracy may be lower compared to long range (more than 24 months) since lag/rolling features are important.")
-        
-        # -------------------------
         # Alerting with st.toast
         # -------------------------
-        
         # Example threshold for alerts
         alert_threshold = df['Operational_Pressure_Index'].mean() + df['Operational_Pressure_Index'].std()
     
@@ -2420,8 +2587,84 @@ with tab_reco:
         if (future_forecast > alert_threshold).any():
             st.toast("⚠️ Forecasted system load exceeds the alert threshold!", icon="🔥")
         else:
-            st.toast("✅ Forecasted system load remains within safe limits.", icon="📈")
-
+            st.toast("✅ Forecasted system load remains within safe limits.", icon="📈")   
+            
+        # -------------------------
+        # Forecast Inflow Velocity (reuse same future_X)
+        # -------------------------
+        df_ml['Inflow_Velocity'] = df['Inflow_Velocity']
+        # Train inflow velocity model
+        target_inflow = 'Inflow_Velocity'
+        features_inflow = X_full.columns  # reuse same date/cyclical features
+        
+        X_inflow = df_ml[features_inflow].dropna()
+        y_inflow = df_ml.loc[X_inflow.index, target_inflow]
+        
+        imputer_inflow = SimpleImputer(strategy="mean")
+        X_inflow_imputed = imputer_inflow.fit_transform(X_inflow)
+        
+        scaler_inflow = StandardScaler()
+        X_inflow_scaled = scaler_inflow.fit_transform(X_inflow_imputed)
+        
+        gbr_inflow = GradientBoostingRegressor(n_estimators=1000, learning_rate=1, max_depth=3, random_state=42)
+        gbr_inflow.fit(X_inflow_scaled, y_inflow)
+        
+        # Forecast inflow velocity using same future_X
+        future_X_inflow_imputed = imputer_inflow.transform(future_X)
+        future_X_inflow_scaled = scaler_inflow.transform(future_X_inflow_imputed)
+        future_forecast_inflow = gbr_inflow.predict(future_X_inflow_scaled)
+        future_forecast_inflow = pd.Series(future_forecast_inflow, index=future_dates)
+        
+        # -------------------------
+        # Plot both forecasts integrated
+        # -------------------------
+        fig = go.Figure()
+        
+        # Historical
+        fig.add_trace(go.Scatter(
+            x=df_ml.index, y=df_ml['Total System Load'],
+            mode='lines', name='Historical Load', line=dict(color='blue')
+        ))
+        fig.add_trace(go.Scatter(
+            x=df_ml.index, y=df_ml['Inflow_Velocity'],
+            mode='lines', name='Historical Inflow Velocity', line=dict(color='green')
+        ))
+        
+        # Forecasts
+        fig.add_trace(go.Scatter(
+            x=future_forecast.index, y=future_forecast,
+            mode='lines', name='Future Forecast Load (GBR)', line=dict(color='red', dash='dash')
+        ))
+        fig.add_trace(go.Scatter(
+            x=future_forecast_inflow.index, y=future_forecast_inflow,
+            mode='lines', name='Future Forecast Inflow Velocity (GBR)', line=dict(color='orange', dash='dot')
+        ))
+        fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=-0.3, x=0.5, xanchor="center"), autosize=True)
+        
+        st.plotly_chart(fig, width='stretch', key="Future_forecast_Load_+_Inflow_Velocity")
+        
+        with st.expander("📑 Forecast Insights"):
+            st.info("ℹ️ Forecasts are generated using Gradient Boosting Regressors retrained on the full dataset with date-based and cyclical features ('Day_of_Week', 'Day_of_Month', 'Month', 'Year', 'Week_of_Year', 'Is_Weekend',  \
+                    'Day_of_Week_sin', 'Day_of_Week_cos', 'Month_sin', 'Month_cos',  \
+                    'Day_of_Month_sin', 'Day_of_Month_cos').")
+            st.success(f"✅ Generated next {len(future_forecast)} days predictions for Total System Load and Inflow Velocity.")
+            st.warning("⚠️ Reliability decreases for horizons beyond 18–24 months, as lag/rolling features are not suitable/included in this forecast approach.")
+            # Latest forecasted values with dates
+            latest_load_date = future_forecast.index[-1].strftime("%Y-%m-%d")
+            latest_inflow_date = future_forecast_inflow.index[-1].strftime("%Y-%m-%d")
+            
+            st.success(f"📈 Latest forecasted Load: {future_forecast.iloc[-1]:.2f} on 📅 {latest_load_date}")
+            st.success(f"🌊 Latest forecasted Inflow Velocity: {future_forecast_inflow.iloc[-1]:.2f} on 📅 {latest_inflow_date}")
+        
+        # -------------------------
+        # Toast alert for inflow velocity threshold
+        # -------------------------
+        inflow_threshold = df_ml['Inflow_Velocity'].mean() + df_ml['Inflow_Velocity'].std()
+        if future_forecast_inflow.iloc[-1] > inflow_threshold:
+            st.toast(f"🚨 Latest forecasted inflow velocity ({future_forecast_inflow.iloc[-1]:.2f}) exceeds threshold {inflow_threshold:.2f}!", icon="🔥")
+        else:
+            st.toast(f"✅ Latest forecasted inflow velocity ({future_forecast_inflow.iloc[-1]:.2f}) is within safe limits.", icon="📈")
+        
         # -------------------------
         # Footer
         # -------------------------
