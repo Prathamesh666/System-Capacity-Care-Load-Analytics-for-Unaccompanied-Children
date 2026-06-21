@@ -1,10 +1,9 @@
-import streamlit as st
+import streamlit as st # type: ignore
 st.set_page_config(
     page_title="System Capacity & Care Load Analytics",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
 import pandas as pd
 import numpy as np
 from model import train_and_evaluate_models, train_and_evaluate_classifiers
