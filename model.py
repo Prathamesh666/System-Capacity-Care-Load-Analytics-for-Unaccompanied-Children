@@ -1,16 +1,19 @@
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.linear_model import LinearRegression, HuberRegressor, LogisticRegression
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, RandomForestClassifier, GradientBoostingClassifier
+from sklearn.svm import SVR, SVC
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.multiclass import OneVsRestClassifier
+from scipy.interpolate import griddata
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
-
-from sklearn.linear_model import LinearRegression, HuberRegressor
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.svm import SVR
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.neighbors import KNeighborsRegressor
 import xgboost as xgb
+import warnings
 
 def train_and_evaluate_models(X_train, y_train, X_test, y_test):
     """Train regression models safely with NaN handling, return figures + performance metrics."""
@@ -85,22 +88,6 @@ def train_and_evaluate_models(X_train, y_train, X_test, y_test):
 
     return figures, performance_df
 
-import streamlit as st
-import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
-import warnings
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-from sklearn.multiclass import OneVsRestClassifier
-import xgboost as xgb
-
 # -------------------------
 # Common function
 # -------------------------
@@ -128,15 +115,20 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
         recall = recall_score(y_test_clf, y_pred, average='weighted', zero_division=0)
         f1 = f1_score(y_test_clf, y_pred, average='weighted', zero_division=0)
 
-        # ROC AUC
-        unique_classes_in_y_test = np.unique(y_test_clf)
-        if len(unique_classes_in_y_test) > 1 and hasattr(clf, "predict_proba"):
+        # --- ROC AUC ---
+        roc_auc = np.nan
+        if hasattr(clf, "predict_proba"):
             y_proba = clf.predict_proba(X_test_clf_scaled)
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", message="Only one class is present in y_true.", category=UserWarning)
-                roc_auc = roc_auc_score(y_test_clf, y_proba, multi_class='ovr', average='weighted', labels=all_encoded_labels)
-        else:
-            roc_auc = np.nan
+            unique_classes_in_y_test = np.unique(y_test_clf)
+
+            if len(unique_classes_in_y_test) == 2:
+                # Binary classification → use positive class column
+                roc_auc = roc_auc_score(y_test_clf, y_proba[:, 1])
+            elif len(unique_classes_in_y_test) > 2:
+                # Multiclass classification → use full probability matrix
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", message="Only one class is present in y_true.", category=UserWarning)
+                    roc_auc = roc_auc_score(y_test_clf, y_proba, multi_class='ovr', average='weighted', labels=all_encoded_labels)
 
         results.append({
             'Model': name,
@@ -163,7 +155,7 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
     fig_heatmap_clf.update_layout(
         title=dict(text='<b>Classification Model Performance Comparison</b>', x=0.5, xanchor='center', font=dict(size=17)),
         xaxis_title='Metric', yaxis_title='Model',
-        template='plotly_white', height=700
+        template='plotly_white', autosize=True
     )
 
     # --- 3D Scatter ---
@@ -192,8 +184,7 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
             xaxis_title='Model', yaxis_title='Metric', zaxis_title='Performance Score',
             xaxis=dict(tickmode='array', tickvals=list(model_mapping.values()), ticktext=list(model_mapping.keys())),
             yaxis=dict(tickmode='array', tickvals=list(metric_mapping.values()), ticktext=list(metric_mapping.keys()))
-        ),
-        height=700
+        ), autosize=True
     )
 
     # --- 3D Surface ---
@@ -201,7 +192,6 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
     y_coords = df_plot_3d['Metric_Numeric'].values
     z_values = df_plot_3d['Score'].values
     grid_x, grid_y = np.mgrid[x_coords.min():x_coords.max():50j, y_coords.min():y_coords.max():50j]
-    from scipy.interpolate import griddata
     grid_z = griddata((x_coords, y_coords), z_values, (grid_x, grid_y), method='cubic')
 
     fig_3d_surface = go.Figure(data=[go.Surface(
@@ -216,8 +206,7 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
             xaxis_title='Model', yaxis_title='Metric', zaxis_title='Performance Score',
             xaxis=dict(tickmode='array', tickvals=list(model_mapping.values()), ticktext=list(model_mapping.keys())),
             yaxis=dict(tickmode='array', tickvals=list(metric_mapping.values()), ticktext=list(metric_mapping.keys()))
-        ),
-        height=700
+        ), autosize=True
     )
 
     figures = {
