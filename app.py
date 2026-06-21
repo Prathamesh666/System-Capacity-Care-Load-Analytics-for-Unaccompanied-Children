@@ -1951,59 +1951,57 @@ with tab_reco:
         label_encoder = LabelEncoder()
         y_clf_encoded = label_encoder.fit_transform(y_clf.values.ravel())
     
-        try:
-            X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(
-            X_clf, y_clf_encoded, test_size=0.3, shuffle=False
-            )
     
-            imputer = SimpleImputer(strategy="mean")
-            X_train_clf_imputed = imputer.fit_transform(X_train_clf)
-            X_test_clf_imputed = imputer.transform(X_test_clf)
+        X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(
+        X_clf, y_clf_encoded, test_size=0.3, shuffle=False
+        )
+
+        imputer = SimpleImputer(strategy="mean")
+        X_train_clf_imputed = imputer.fit_transform(X_train_clf)
+        X_test_clf_imputed = imputer.transform(X_test_clf)
+    
+        scaler_clf = StandardScaler()
+        X_train_clf_scaled = scaler_clf.fit_transform(X_train_clf_imputed)
+        X_test_clf_scaled = scaler_clf.transform(X_test_clf_imputed)
+        X_train_clf_scaled = pd.DataFrame(np.asarray(X_train_clf_scaled), columns=X_train_clf.columns, index=X_train_clf.index)
+        X_test_clf_scaled = pd.DataFrame(np.asarray(X_test_clf_scaled), columns=X_test_clf.columns, index=X_test_clf.index)
         
-            scaler_clf = StandardScaler()
-            X_train_clf_scaled = scaler_clf.fit_transform(X_train_clf_imputed)
-            X_test_clf_scaled = scaler_clf.transform(X_test_clf_imputed)
-            X_train_clf_scaled = pd.DataFrame(np.asarray(X_train_clf_scaled), columns=X_train_clf.columns, index=X_train_clf.index)
-            X_test_clf_scaled = pd.DataFrame(np.asarray(X_test_clf_scaled), columns=X_test_clf.columns, index=X_test_clf.index)
-            
-            # -------------------------
-            # Classification Models UI
-            # -------------------------
-            st.subheader("🧮 Classification Models")
-        
-            figures_clf, performance_df_clf = train_and_evaluate_classifiers(
-                X_train_clf_scaled, y_train_clf, X_test_clf_scaled, y_test_clf, label_encoder
-            )
-        
-            st.markdown("### 📊 Classification: Load Category (Low / Medium / High)")
-            # 📦 Load category distribution with expander
-            st.markdown("##### 📦 Load Category Distribution")
-            st.bar_chart(df_ml['Load_Category'].value_counts())
-            st.info("ℹ️ This chart shows how many days fall into each load category.")
-            with st.expander("🔎 How Categories Were Defined"):
-                st.success(f"🏆 High Load: Days where 'Total System Load' ≥ 75th percentile ({high_load_threshold:.2f})")
-                st.warning(f"⚠️ Low Load: Days where 'Total System Load' ≤ 25th percentile ({low_load_threshold:.2f})")
-                st.info("ℹ️ Medium Load: All days between the 25th and 75th percentile thresholds")
-        
-            st.subheader("📊 Classification Performance Comparison")
-            selected_viz = st.selectbox("🔍 Choose Classification Visualization:", list(figures_clf.keys()))
-            figures_clf[selected_viz].update_layout(autosize=True)
-            st.plotly_chart(figures_clf[selected_viz], width='stretch')
-        
-            with st.expander("📑 Classification Performance Insights"):
-                best_model = performance_df_clf.sort_values(
-                    by=['F1-Score','Accuracy','Recall'], ascending=[False,False,False]
-                ).iloc[0]
-                worst_model = performance_df_clf.sort_values(
-                    by=['F1-Score','Accuracy','Recall'], ascending=[True,True,True]
-                ).iloc[0]
-                st.success(f"🏆 Best Classification Model: **{best_model['Model']}** "
-                        f"(F1={best_model['F1-Score']:.3f}, Acc={best_model['Accuracy']:.3f})")
-                st.warning(f"⚠️ Worst Classification Model: **{worst_model['Model']}** "
-                        f"(F1={worst_model['F1-Score']:.3f}, Acc={worst_model['Accuracy']:.3f})")
-                st.info(f"ℹ️ {selected_viz} shows all classification models together for quick comparison.")
-        except Exception as e:
-            st.warning(f"Not enough data for classification: {e}")
+        # -------------------------
+        # Classification Models UI
+        # -------------------------
+        st.subheader("🧮 Classification Models")
+    
+        figures_clf, performance_df_clf = train_and_evaluate_classifiers(
+            X_train_clf_scaled, y_train_clf, X_test_clf_scaled, y_test_clf, label_encoder
+        )
+    
+        st.markdown("### 📊 Classification: Load Category (Low / Medium / High)")
+        # 📦 Load category distribution with expander
+        st.markdown("##### 📦 Load Category Distribution")
+        st.bar_chart(df_ml['Load_Category'].value_counts())
+        st.info("ℹ️ This chart shows how many days fall into each load category.")
+        with st.expander("🔎 How Categories Were Defined"):
+            st.success(f"🏆 High Load: Days where 'Total System Load' ≥ 75th percentile ({high_load_threshold:.2f})")
+            st.warning(f"⚠️ Low Load: Days where 'Total System Load' ≤ 25th percentile ({low_load_threshold:.2f})")
+            st.info("ℹ️ Medium Load: All days between the 25th and 75th percentile thresholds")
+    
+        st.subheader("📊 Classification Performance Comparison")
+        selected_viz = st.selectbox("🔍 Choose Classification Visualization:", list(figures_clf.keys()))
+        figures_clf[selected_viz].update_layout(autosize=True)
+        st.plotly_chart(figures_clf[selected_viz], width='stretch')
+    
+        with st.expander("📑 Classification Performance Insights"):
+            best_model = performance_df_clf.sort_values(
+                by=['F1-Score','Accuracy','Recall'], ascending=[False,False,False]
+            ).iloc[0]
+            worst_model = performance_df_clf.sort_values(
+                by=['F1-Score','Accuracy','Recall'], ascending=[True,True,True]
+            ).iloc[0]
+            st.success(f"🏆 Best Classification Model: **{best_model['Model']}** "
+                    f"(F1={best_model['F1-Score']:.3f}, Acc={best_model['Accuracy']:.3f})")
+            st.warning(f"⚠️ Worst Classification Model: **{worst_model['Model']}** "
+                    f"(F1={worst_model['F1-Score']:.3f}, Acc={worst_model['Accuracy']:.3f})")
+            st.info(f"ℹ️ {selected_viz} shows all classification models together for quick comparison.")
     
     # -------------------------
     # Forecasts & Recommendations
