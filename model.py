@@ -108,19 +108,14 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
 
     # --- Ensure contiguous labels for XGBoost ---
     unique_labels = np.unique(y_train_clf)
-    y_train_clf_mapped = y_train_clf
-    y_test_clf_mapped = y_test_clf
 
     for name, clf in classifiers.items():
         if name == "XGBoost":
             clf.set_params(num_class=len(unique_labels))
-            clf.fit(X_train_clf_scaled, y_train_clf_mapped)
-            y_pred = clf.predict(X_test_clf_scaled)
-            y_true_eval = y_test_clf_mapped
-        else:
-            clf.fit(X_train_clf_scaled, y_train_clf)
-            y_pred = clf.predict(X_test_clf_scaled)
-            y_true_eval = y_test_clf
+        
+        clf.fit(X_train_clf_scaled, y_train_clf)
+        y_pred = clf.predict(X_test_clf_scaled)
+        y_true_eval = y_test_clf
 
         # --- Metrics ---
         accuracy = accuracy_score(y_true_eval, y_pred)
