@@ -95,7 +95,7 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
     classifiers = {
         'Logistic Regression': OneVsRestClassifier(LogisticRegression(random_state=42, solver='liblinear')),
         'Random Forest': RandomForestClassifier(random_state=42),
-        'XGBoost': xgb.XGBClassifier(eval_metric='mlogloss', random_state=42),
+        'XGBoost': xgb.XGBClassifier(eval_metric='mlogloss', random_state=42, use_label_encoder=False),
         'SVC': SVC(probability=True, random_state=42),
         'Gradient Boosting': GradientBoostingClassifier(random_state=42),
         'Decision Tree': DecisionTreeClassifier(random_state=42),
@@ -106,32 +106,52 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
     results = []
     all_encoded_labels = label_encoder.transform(label_encoder.classes_)
 
+    # --- Ensure contiguous labels for XGBoost ---
+    unique_labels = np.unique(y_train_clf)
+    label_mapping = {old: new for new, old in enumerate(unique_labels)}
+    y_train_clf_mapped = np.array([label_mapping[label] for label in y_train_clf])
+    y_test_clf_mapped = np.array([label_mapping[label] for label in y_test_clf])
+
     for name, clf in classifiers.items():
         if name == "XGBoost":
-            clf.set_params(num_class=len(np.unique(y_train_clf)))
-        clf.fit(X_train_clf_scaled, y_train_clf)
-        y_pred = clf.predict(X_test_clf_scaled)
+            clf.set_params(num_class=len(unique_labels))
+            clf.fit(X_train_clf_scaled, y_train_clf_mapped)
+            y_pred = clf.predict(X_test_clf_scaled)
+            y_true_eval = y_test_clf_mapped
+        else:
+            clf.fit(X_train_clf_scaled, y_train_clf)
+            y_pred = clf.predict(X_test_clf_scaled)
+            y_true_eval = y_test_clf
 
-        accuracy = accuracy_score(y_test_clf, y_pred)
-        precision = precision_score(y_test_clf, y_pred, average='weighted', zero_division=0)
-        recall = recall_score(y_test_clf, y_pred, average='weighted', zero_division=0)
-        f1 = f1_score(y_test_clf, y_pred, average='weighted', zero_division=0)
+        # --- Metrics ---
+        accuracy = accuracy_score(y_true_eval, y_pred)
+        precision = precision_score(y_true_eval, y_pred, average='weighted', zero_division=0)
+        recall = recall_score(y_true_eval, y_pred, average='weighted', zero_division=0)
+        f1 = f1_score(y_true_eval, y_pred, average='weighted', zero_division=0)
 
         # --- ROC AUC ---
-        roc_auc = np.nan
-        if hasattr(clf, "predict_proba"):
-            y_proba = clf.predict_proba(X_test_clf_scaled)
-            unique_classes_in_y_test = np.unique(y_test_clf)
+        try:
+            if hasattr(clf, "predict_proba"):
+                y_proba = clf.predict_proba(X_test_clf_scaled)
+            elif hasattr(clf, "decision_function"):
+                # Use decision scores if probabilities not available
+                y_proba = clf.decision_function(X_test_clf_scaled)
+                # Convert to probability-like scores for binary
+                if len(np.unique(y_true_eval)) == 2 and y_proba.ndim == 1:
+                    y_proba = np.vstack([1 - y_proba, y_proba]).T
+            else:
+                y_proba = None
 
-            if len(unique_classes_in_y_test) == 2:
-                # Binary classification → use positive class column
-                roc_auc = roc_auc_score(y_test_clf, y_proba[:, 1])
-            elif len(unique_classes_in_y_test) > 2:
-                # Multiclass classification → use full probability matrix
-                with warnings.catch_warnings():
-                    warnings.filterwarnings("ignore", message="Only one class is present in y_true.", category=UserWarning)
-                    roc_auc = roc_auc_score(y_test_clf, y_proba, multi_class='ovr', average='weighted', labels=all_encoded_labels)
-
+            if y_proba is not None:
+                if len(np.unique(y_true_eval)) == 2:
+                    roc_auc = roc_auc_score(y_true_eval, y_proba[:, 1])
+                else:
+                    roc_auc = roc_auc_score(y_true_eval, y_proba, multi_class='ovr', average='weighted', labels=all_encoded_labels)
+            else:
+                roc_auc = 0.0  # fallback if neither proba nor decision_function
+        except Exception as e:
+            roc_auc = 0.0  # safe fallback
+            
         results.append({
             'Model': name,
             'Accuracy': accuracy,
