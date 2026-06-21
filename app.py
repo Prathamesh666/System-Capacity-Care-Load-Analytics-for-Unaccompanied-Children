@@ -1859,7 +1859,7 @@ with tab_reco:
         figures_reg.setdefault("3D Surface", go.Figure(data=[go.Surface(
             z=[[mae] for mae in df_perf["MAE"]]
         )]).update_layout(
-            title="3D Surface: Regression Performance Landscape",
+            title="3D Surface: Regression Performance Landscape", autosize=True,
             scene=dict(xaxis_title="Model Index", yaxis_title="Metric Axis", zaxis_title="MAE")
         ))
         
@@ -1905,7 +1905,7 @@ with tab_reco:
             features_clf = [col for col in df_ml.columns if col not in [target_variable_clf, 'Total System Load', 'Day_Label', 'Month_Label']]
         
             X_clf = df_ml[features_clf]
-            y_clf = df_ml[target_variable_clf]
+            y_clf = df_ml[target_variable_clf].astype(str)
         
             label_encoder = LabelEncoder()
             y_clf_encoded = label_encoder.fit_transform(y_clf)
@@ -1946,6 +1946,7 @@ with tab_reco:
         
             st.subheader("📊 Classification Performance Comparison")
             selected_viz = st.selectbox("🔍 Choose Classification Visualization:", list(figures_clf.keys()))
+            figures_clf[selected_viz].update_layout(autosize=True)
             st.plotly_chart(figures_clf[selected_viz], width='stretch')
         
             with st.expander("📑 Classification Performance Insights"):
