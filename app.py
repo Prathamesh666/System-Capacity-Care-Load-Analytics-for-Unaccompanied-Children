@@ -1272,7 +1272,7 @@ with tab_struct:
             # Layout with centered bold title
             fig1.update_layout(
                 title=dict( text="📈 <b>Total System Load with Rolling Averages</b>", x=0.5, xanchor='center', yanchor='top'),
-                legend=dict(title="📌 Rolling Trends", orientation="h", yanchor="bottom", y=-0.4, x=0.5, xanchor="center"), 
+                legend=dict(title="📌 Rolling Trends", orientation="h", yanchor="bottom", y=-0.66, x=0.5, xanchor="center"), 
                 xaxis_title="📅 Date", yaxis_title="👶 Total Children Under Care", autosize=True
             )
         
@@ -1962,7 +1962,7 @@ with tab_reco:
                 st.info(f"ℹ️ {selected_viz} shows all classification models together for quick comparison.")
                 
         except Exception as e:
-            st.warning("Not enough data for classification")
+            st.warning(f"Not enough data for classification: {e}")
     
     # -------------------------
     # Forecasts & Recommendations
