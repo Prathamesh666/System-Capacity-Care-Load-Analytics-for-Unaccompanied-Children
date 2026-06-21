@@ -436,7 +436,7 @@ with tab_struct:
                 st.info("📊 Net Daily Intake = Transfers out of CBP - Discharges from HHS.")
                 st.success("🔄 Positive values indicate net inflow; negative values indicate net outflow.")
                 st.warning("⚠️ Sustained positive net intake may signal growing operational pressure; sustained negative may indicate relief or issues.")
-                st.plotly_chart(fig_net_intake, width='stretch', key="daily_net_intake_chart")
+                st.plotly_chart(fig_net_intake, width='stretch')
             
                 with st.expander("ℹ️ More Information about Net Intake"):
                     avg_intake = df['Net Daily Intake'].mean()
@@ -459,7 +459,7 @@ with tab_struct:
                 st.info("📊 Care Load Growth Rate = % change in Total System Load from the previous day.")
                 st.success("📈 Positive values indicate growth; negative values indicate decline.")
                 st.warning("⚠️ Sudden spikes in growth rate may indicate stress windows that require closer monitoring.")
-                st.plotly_chart(fig_growth_rate, width='stretch', key="daily_growth_rate_chart")
+                st.plotly_chart(fig_growth_rate, width='stretch')
             
                 with st.expander("ℹ️ More Information about Growth Rate"):
                     avg_growth = df['Care Load Growth Rate'].mean()
@@ -584,7 +584,7 @@ with tab_struct:
                         ), autosize=True
                     )
     
-                # Render with Streamlit using your rule
+                # Render with Streamlit using your rule  
                 st.plotly_chart(fig_viz, width='stretch')
     
                 # Expander with insights
@@ -1720,11 +1720,11 @@ with tab_reco:
             with st.expander("Feature distributions & pairwise scatter"):
                 st.dataframe(df_ml.head(6), width='stretch')
                 top_features = ['lag_1', 'lag_7', 'roll_mean_7', 'roll_std_7', 'Net Daily Intake']
-                cols = st.columns(2)
+                cols = st.columns(3)
                 for i, f in enumerate(top_features):
                     fig_dist = px.histogram(df_ml, x=f, nbins=40, title=f"Distribution: {f}")
-                    fig_dist.update_layout(height=300, template='plotly_white')
-                    cols[i % 2].plotly_chart(fig_dist, width='stretch')
+                    fig_dist.update_layout(autosize=True)
+                    cols[i % 3].plotly_chart(fig_dist, width='stretch')
                 with st.expander("More Information"):
                     st.info("Lags, rolling stats, cyclical encodings, and interactions added to capture temporal patterns.")
                     st.success("These features are commonly effective for short-term time-series forecasting.")
@@ -1802,10 +1802,8 @@ with tab_reco:
                 category_orders={'Day_Label': day_order},
                 color_discrete_sequence=px.colors.qualitative.Set2
             )
-            fig_day.update_layout(
-                template='plotly_white',
-                hovermode='x unified', autosize=True,
-                title=dict(x=0.5, xanchor='center')
+            fig_day.update_layout(autosize=True,
+                title=dict(x=0.5, xanchor='center', yanchor="top")
             )
             st.plotly_chart(fig_day, width='stretch', key="day_distribution")
     
@@ -1831,10 +1829,8 @@ with tab_reco:
                 category_orders={'Month_Label': month_order},
                 color_discrete_sequence=px.colors.qualitative.Set3
             )
-            fig_month.update_layout(
-                template='plotly_white',
-                hovermode='x unified', autosize=True,
-                title=dict(x=0.5, xanchor='center')
+            fig_month.update_layout(autosize=True,
+                title=dict(x=0.5, xanchor='center', yanchor="top")
             )
             st.plotly_chart(fig_month, width='stretch', key="month_distribution")
     
