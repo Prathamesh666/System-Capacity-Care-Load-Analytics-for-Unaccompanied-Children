@@ -95,7 +95,7 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
     classifiers = {
         'Logistic Regression': OneVsRestClassifier(LogisticRegression(random_state=42, solver='liblinear')),
         'Random Forest': RandomForestClassifier(random_state=42),
-        'XGBoost': xgb.XGBClassifier(eval_metric='mlogloss', random_state=42, use_label_encoder=False),
+        'XGBoost': xgb.XGBClassifier(eval_metric='mlogloss', random_state=42, use_label_encoder=True),
         'SVC': SVC(probability=True, random_state=42),
         'Gradient Boosting': GradientBoostingClassifier(random_state=42),
         'Decision Tree': DecisionTreeClassifier(random_state=42),
@@ -107,7 +107,6 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
     all_encoded_labels = label_encoder.transform(label_encoder.classes_)
 
     # --- Ensure contiguous labels for XGBoost ---
-    print(y_train_clf)
     unique_labels = np.unique(y_train_clf)
 
     for name, clf in classifiers.items():
