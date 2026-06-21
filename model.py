@@ -91,7 +91,7 @@ def train_and_evaluate_models(X_train, y_train, X_test, y_test):
 # -------------------------
 # Common function
 # -------------------------
-def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_scaled, y_test_clf):
+def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_scaled, y_test_clf, label_encoder):
     classifiers = {
         'Logistic Regression': OneVsRestClassifier(LogisticRegression(random_state=42, solver='liblinear')),
         'Random Forest': RandomForestClassifier(random_state=42),
@@ -104,27 +104,20 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
     }
 
     results = []
+    all_encoded_labels = label_encoder.transform(label_encoder.classes_)
 
     # --- Ensure contiguous labels for XGBoost ---
+    print(y_train_clf)
     unique_labels = np.unique(y_train_clf)
 
     for name, clf in classifiers.items():
         if name == "XGBoost":
-            # Remap labels to contiguous integers
-            unique_labels = np.unique(y_train_clf)
-            label_mapping = {old: new for new, old in enumerate(sorted(unique_labels))}
-            y_train_clf_mapped = np.array([label_mapping[label] for label in y_train_clf])
-            y_test_clf_mapped = np.array([label_mapping.get(label, label) for label in y_test_clf])
-        
             clf.set_params(num_class=len(unique_labels))
-            clf.fit(X_train_clf_scaled, y_train_clf_mapped)
-            y_pred = clf.predict(X_test_clf_scaled)
-            y_true_eval = y_test_clf_mapped
-        else:
-            clf.fit(X_train_clf_scaled, y_train_clf)
-            y_pred = clf.predict(X_test_clf_scaled)
-            y_true_eval = y_test_clf
         
+        clf.fit(X_train_clf_scaled, y_train_clf)
+        y_pred = clf.predict(X_test_clf_scaled)
+        y_true_eval = y_test_clf
+
         # --- Metrics ---
         accuracy = accuracy_score(y_true_eval, y_pred)
         precision = precision_score(y_true_eval, y_pred, average='weighted', zero_division=0)
@@ -148,7 +141,7 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
                 if len(np.unique(y_true_eval)) == 2:
                     roc_auc = roc_auc_score(y_true_eval, y_proba[:, 1])
                 else:
-                    roc_auc = roc_auc_score(y_true_eval, y_proba, multi_class='ovr', average='weighted')
+                    roc_auc = roc_auc_score(y_true_eval, y_proba, multi_class='ovr', average='weighted', labels=all_encoded_labels)
             else:
                 roc_auc = 0.0  # fallback if neither proba nor decision_function
         except Exception as e:

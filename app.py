@@ -1971,7 +1971,7 @@ with tab_reco:
         st.subheader("🧮 Classification Models")
     
         figures_clf, performance_df_clf = train_and_evaluate_classifiers(
-            X_train_clf_scaled, y_train_clf, X_test_clf_scaled, y_test_clf
+            X_train_clf_scaled, y_train_clf, X_test_clf_scaled, y_test_clf, label_encoder
         )
     
         st.markdown("### 📊 Classification: Load Category (Low / Medium / High)")
