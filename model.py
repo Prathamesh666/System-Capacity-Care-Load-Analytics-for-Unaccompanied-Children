@@ -107,6 +107,8 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
     all_encoded_labels = label_encoder.transform(label_encoder.classes_)
 
     for name, clf in classifiers.items():
+        if name == "XGBoost":
+            clf.set_params(num_class=len(np.unique(y_train_clf)))
         clf.fit(X_train_clf_scaled, y_train_clf)
         y_pred = clf.predict(X_test_clf_scaled)
 
