@@ -108,9 +108,8 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
 
     # --- Ensure contiguous labels for XGBoost ---
     unique_labels = np.unique(y_train_clf)
-    label_mapping = {old: new for new, old in enumerate(unique_labels)}
-    y_train_clf_mapped = np.array([label_mapping[label] for label in y_train_clf])
-    y_test_clf_mapped = np.array([label_mapping[label] for label in y_test_clf])
+    y_train_clf_mapped = y_train_clf
+    y_test_clf_mapped = y_test_clf
 
     for name, clf in classifiers.items():
         if name == "XGBoost":

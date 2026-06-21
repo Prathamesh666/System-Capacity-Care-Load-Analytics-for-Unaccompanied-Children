@@ -1951,7 +1951,6 @@ with tab_reco:
         label_encoder = LabelEncoder()
         y_clf_encoded = label_encoder.fit_transform(y_clf.values.ravel())
     
-    
         X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(
         X_clf, y_clf_encoded, test_size=0.3, shuffle=False
         )
