@@ -111,12 +111,21 @@ def train_and_evaluate_classifiers(X_train_clf_scaled, y_train_clf, X_test_clf_s
 
     for name, clf in classifiers.items():
         if name == "XGBoost":
-            clf.set_params(num_class=len(unique_labels))
+            # Remap labels to contiguous integers
+            unique_labels = np.unique(y_train_clf)
+            label_mapping = {old: new for new, old in enumerate(sorted(unique_labels))}
+            y_train_clf_mapped = np.array([label_mapping[label] for label in y_train_clf])
+            y_test_clf_mapped = np.array([label_mapping.get(label, label) for label in y_test_clf])
         
-        clf.fit(X_train_clf_scaled, y_train_clf)
-        y_pred = clf.predict(X_test_clf_scaled)
-        y_true_eval = y_test_clf
-
+            clf.set_params(num_class=len(unique_labels))
+            clf.fit(X_train_clf_scaled, y_train_clf_mapped)
+            y_pred = clf.predict(X_test_clf_scaled)
+            y_true_eval = y_test_clf_mapped
+        else:
+            clf.fit(X_train_clf_scaled, y_train_clf)
+            y_pred = clf.predict(X_test_clf_scaled)
+            y_true_eval = y_test_clf
+        
         # --- Metrics ---
         accuracy = accuracy_score(y_true_eval, y_pred)
         precision = precision_score(y_true_eval, y_pred, average='weighted', zero_division=0)
