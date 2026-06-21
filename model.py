@@ -59,7 +59,6 @@ def train_and_evaluate_models(X_train, y_train, X_test, y_test):
         fig.update_layout(
             title=dict(text=f'{name}: Actual vs Predicted', x=0.5, xanchor='center'),
             xaxis_title='Date', yaxis_title='Total System Load',
-            template='plotly_white', hovermode='x unified',
             legend=dict(x=0.01, y=0.99, bordercolor="Black", borderwidth=1)
         )
         figures[name] = fig
@@ -79,8 +78,7 @@ def train_and_evaluate_models(X_train, y_train, X_test, y_test):
     ))
     fig_heatmap.update_layout(
         title=dict(text='<b>Regression Model Performance Comparison</b>', x=0.5, xanchor='center'),
-        xaxis_title='Metric', yaxis_title='Model',
-        template='plotly_white', height=600
+        xaxis_title='Metric', yaxis_title='Model', autosize=True
     )
 
     figures["Performance Heatmap"] = fig_heatmap
