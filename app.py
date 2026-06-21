@@ -1887,7 +1887,6 @@ with tab_reco:
         # Classification Setup
         # -------------------------
         try:
-                
             high_load_threshold = df_ml['Total System Load'].quantile(0.75)
             low_load_threshold = df_ml['Total System Load'].quantile(0.25)
         
@@ -1900,15 +1899,13 @@ with tab_reco:
                     return 'Medium'
         
             df_ml['Load_Category'] = df_ml['Total System Load'].apply(get_load_category)
-        
             target_variable_clf = 'Load_Category'
             features_clf = [col for col in df_ml.columns if col not in [target_variable_clf, 'Total System Load', 'Day_Label', 'Month_Label']]
         
             X_clf = df_ml[features_clf]
             y_clf = df_ml[target_variable_clf].astype(str)
-        
             label_encoder = LabelEncoder()
-            y_clf_encoded = label_encoder.fit_transform(y_clf)
+            y_clf_encoded = label_encoder.fit_transform(y_clf.values.ravel())
         
             X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(
                 X_clf, y_clf_encoded, test_size=0.3, shuffle=False
@@ -1921,7 +1918,6 @@ with tab_reco:
             scaler_clf = StandardScaler()
             X_train_clf_scaled = scaler_clf.fit_transform(X_train_clf_imputed)
             X_test_clf_scaled = scaler_clf.transform(X_test_clf_imputed)
-        
             X_train_clf_scaled = pd.DataFrame(np.asarray(X_train_clf_scaled), columns=X_train_clf.columns, index=X_train_clf.index)
             X_test_clf_scaled = pd.DataFrame(np.asarray(X_test_clf_scaled), columns=X_test_clf.columns, index=X_test_clf.index)
         
