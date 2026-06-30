@@ -19,6 +19,21 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 import warnings 
 warnings.filterwarnings("ignore")
 
+ga_tag = """
+    <head>
+        <meta name="google-site-verification" content="8qhJewqcfQuP-HpMtrPOHyc72ENL1xOzBI_THkMVHKo" />
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-5BGGVLKTML"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+        
+            gtag('config', 'G-5BGGVLKTML');
+        </script>
+    </head>
+    """
+st.html(ga_tag)
 # -------------------------
 # Helpers & caching
 # -------------------------
@@ -454,7 +469,7 @@ with tab_struct:
                 labels={'Care Load Growth Rate': '📊 Growth Rate (%)', 'index': '📅 Date'}
             )
             fig_growth_rate.update_layout( title=dict( text="📈 <b>Daily Care Load Growth Rate (%)</b>", x=0.5, xanchor='center', yanchor='top' ),
-            autosize=True )
+            autosize=True, margin=dict(l=40, r=40, t=100, b=40) )
             with col2:
                 st.info("📊 Care Load Growth Rate = % change in Total System Load from the previous day.")
                 st.success("📈 Positive values indicate growth; negative values indicate decline.")
@@ -1652,7 +1667,7 @@ with tab_reco:
         latest_val = df['Inflow_Velocity'].iloc[-1]
         c2.metric("⚡ Inflow Velocity Rate", f"{latest_val:.2f}", "0")
     else:
-        c2.metric("⚡ Inflow Velocity Rate", "N/A", "N/A")
+        c2.metric("⚡ Inflow Velocity Rate", "NA", "NA")
     c3.metric("🚨 High Pressure Alerts", int(df['High_Pressure_Alert'].sum()))
     
     r_features, r_models, r_forecasts, r_future = st.tabs(["🧩 Feature Engineering", "🧪 Modeling & Evaluation", "🚨 Alerts & Velocity", "🔮 Future Predictions"])
@@ -2268,7 +2283,7 @@ with tab_reco:
             latest_val = df['Inflow_Velocity'].iloc[-1]
             p1.metric("Inflow Velocity Rate", f"{latest_val:.2f}", delta="0")
         else:
-            p1.metric("Inflow Velocity Rate", "N/A", delta="N/A")
+            p1.metric("Inflow Velocity Rate", "NA", delta="NA")
             
         # Pressure–Stress Coupling Index (OPI × Inflow / Variability)
         coupling_index = (
